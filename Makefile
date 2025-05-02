@@ -1,46 +1,44 @@
-# Nome do executável
-NAME        = minishell
+NAME = minishell
 
-# Compilador e flags
-CC          = cc
-CFLAGS      = -Wall -Wextra -Werror
-RLFLAGS     = -lreadline -lhistory   # Flags para readline
+SRC_DIR = src
+OBJ_DIR = obj
+LIBFT_DIR = Libft42
 
-# Diretórios
-SRC_DIR     = src
-OBJ_DIR     = obj
-INC_DIR     = includes
+SRC = $(wildcard $(SRC_DIR)/*.c) \
+      $(wildcard $(SRC_DIR)/tokenizer/*.c) \
+      $(wildcard $(SRC_DIR)/parser/*.c) \
+      $(wildcard $(SRC_DIR)/executor/*.c) \
+      $(wildcard $(SRC_DIR)/executor/builtins/*.c) \
+      $(wildcard $(SRC_DIR)/environment/*.c) \
+      $(wildcard $(SRC_DIR)/utils/*.c) \
+      $(wildcard $(SRC_DIR)/builtins/*.c)
 
-# Encontra todos os arquivos .c recursivamente em src/
-SRCS        = $(shell find $(SRC_DIR) -type f -name '*.c')
-# Gera os paths dos .o trocando 'src/' por 'obj/' e .c por .o
-OBJS        = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
-# Regra principal
-all: $(OBJ_DIR) $(NAME)
+OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
 
-# Cria a estrutura de pastas em obj/ (espelhando src/)
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
-	@# Espelha a estrutura de subpastas de src/ em obj/
-	$(shell find $(SRC_DIR) -type d -exec mkdir -p $(OBJ_DIR)/{} \; 2>/dev/null)
+CC = gcc
+CFLAGS = -Wall -Wextra -Werror -Iincludes -I$(LIBFT_DIR)/includes
+LDFLAGS = -L$(LIBFT_DIR) -lft -lreadline -lncurses
 
-# Linka os objetos para criar o executável
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME) $(RLFLAGS)
+all: $(NAME)
 
-# Compila cada .c em .o, mantendo a estrutura de subpastas
+$(NAME): $(OBJ)
+	@make -C $(LIBFT_DIR)
+	@$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	@echo "Minishell compiled successfully!"
+
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(dir $@)  # Cria a subpasta necessária (ex: obj/prompt/)
-	$(CC) $(CFLAGS) -c $< -o $@ -I $(INC_DIR)
-	
-# Limpa
+	@mkdir -p $(@D)
+	@$(CC) $(CFLAGS) -c $< -o $@
+
 clean:
-	rm -rf $(OBJ_DIR)
+	@rm -rf $(OBJ_DIR)
+	@make clean -C $(LIBFT_DIR)
 
 fclean: clean
-	rm -f $(NAME)
+	@rm -f $(NAME)
+	@make fclean -C $(LIBFT_DIR)
 
 re: fclean all
 
-.PHONY: all clean
+.PHONY: all clean fclean re
