@@ -57,8 +57,8 @@ t_token    *tokenizer_input(char *input);
 void       free_tokens(t_token *tok);
 
 /* Parser */
-t_cmd      *parse_tokens(t_token *tokens);
-void       free_commands(t_cmd *cmd);
+t_cmd *parse_tokens(t_token *tokens);
+void free_commands(t_cmd *cmd);
 
 /* Executor */
 int        execute(t_cmd *cmd, t_env **env);

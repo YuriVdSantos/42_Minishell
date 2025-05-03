@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/yurivieiradossantos/minishell/bultins/echo",
-      "program": "/Users/yurivieiradossantos/minishell/bultins/echo/build/Debug/outDebug"
+      "cwd": "/Users/yurivieiradossantos/minishell",
+      "program": "/Users/yurivieiradossantos/minishell/build/Debug/outDebug"
     }
   ]
 }

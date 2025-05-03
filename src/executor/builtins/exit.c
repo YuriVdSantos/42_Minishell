@@ -1,4 +1,4 @@
-#include "minishell.h"
+/* #include "minishell.h"
 
 int ft_exit(t_cmd *cmd, t_env **env)
 {
@@ -23,4 +23,16 @@ int ft_exit(t_cmd *cmd, t_env **env)
     
     free_env(*env);
     exit(exit_code);
+}
+ */
+
+#include "minishell.h"
+
+int ft_exit(t_cmd *cmd, t_env **env)
+{
+    (void)cmd;
+    (void)env;
+    ft_putendl_fd("exit", STDOUT_FILENO);
+    exit(0);
+    return (0);
 }
