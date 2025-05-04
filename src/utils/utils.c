@@ -55,60 +55,42 @@ int ft_isdigit_str(const char *str)
     return (1);
 }
 
-#include "minishell.h"
-
-/**
- * Remove aspas de uma string, preservando o conteúdo interno
- * @param str A string a ser processada
- * @return Nova string sem aspas (deve ser liberada pelo caller)
- */
 char *remove_quotes(char *str)
 {
+    char *result;
     int i = 0;
     int j = 0;
     char quote = 0;
-    char *result = malloc(ft_strlen(str) + 1);
-    
+
+    if (!str)
+        return (NULL);
+        
+    result = malloc(ft_strlen(str) + 1);
     if (!result)
         return (NULL);
 
     while (str[i])
     {
         if ((str[i] == '\'' || str[i] == '"') && !quote)
-        {
-            quote = str[i]; // Começa uma nova quoted string
-        }
+            quote = str[i];
         else if (str[i] == quote)
-        {
-            quote = 0; // Fecha a quoted string
-        }
+            quote = 0;
         else
-        {
-            result[j++] = str[i]; // Copia caracteres normais
-        }
+            result[j++] = str[i];
         i++;
     }
     result[j] = '\0';
     
-    // Caso especial: aspas não fechadas
+    // Se aspas não foram fechadas, retorna string original
     if (quote)
     {
         free(result);
-        return (ft_strdup(str)); // Retorna cópia original se aspas não forem fechadas
+        return (ft_strdup(str));
     }
     
     return (result);
 }
 
-#include "minishell.h"
-
-/**
- * Expande variáveis de ambiente e especiais ($?, $PWD, etc.)
- * @param str String a ser expandida
- * @param env Lista de variáveis de ambiente
- * @param exit_status Último código de saída
- * @return Nova string expandida (deve ser liberada pelo caller)
- */
 char *expand_variables(char *str, t_env *env, int exit_status)
 {
     t_string_builder sb;
@@ -119,39 +101,30 @@ char *expand_variables(char *str, t_env *env, int exit_status)
     if (!str)
         return (NULL);
         
-    init_string_builder(&sb); // Inicializa buffer dinâmico
+    init_string_builder(&sb);
 
     while (str[i])
     {
         if (str[i] == '$' && str[i + 1])
         {
             i++;
-            // Caso especial: $?
-            if (str[i] == '?')
-            {
+            var_name = extract_var_name(str + i);
+            if (!var_name)
+                break;
+                
+            if (ft_strcmp(var_name, "?") == 0)
                 append_number(&sb, exit_status);
-                i++;
-            }
-            // Extrai nome da variável (letras, números e underscore)
-            else if (ft_isalpha(str[i]) || str[i] == '_')
+            else
             {
-                var_name = extract_var_name(str + i);
                 var_value = get_env_value(env, var_name);
                 if (var_value)
                     append_string(&sb, var_value);
-                i += ft_strlen(var_name);
-                free(var_name);
             }
-            else
-            {
-                append_char(&sb, '$');
-                append_char(&sb, str[i++]);
-            }
+            i += ft_strlen(var_name);
+            free(var_name);
         }
         else
-        {
             append_char(&sb, str[i++]);
-        }
     }
     
     return (sb.buffer);
@@ -159,18 +132,16 @@ char *expand_variables(char *str, t_env *env, int exit_status)
 
 static char *extract_var_name(char *str)
 {
-    int len = 0;
+    int i = 0;
     
-    if (str[len] == '?')
+    if (str[i] == '?')
         return (ft_strdup("?"));
         
-    while (str[len] && (ft_isalnum(str[len]) || str[len] == '_'))
-        len++;
+    while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
+        i++;
         
-    return (ft_strndup(str, len));
+    return (ft_strndup(str, i));
 }
-
-#include "minishell.h"
 
 void init_string_builder(t_string_builder *sb)
 {
@@ -191,3 +162,36 @@ void append_char(t_string_builder *sb, char c)
     sb->buffer[sb->size] = '\0';
 }
 
+int is_valid_number(const char *str)
+{
+    int i;
+
+    if (!str || !*str)
+        return (0);
+
+    i = 0;
+    // Permite sinal + ou - no início
+    if (str[i] == '+' || str[i] == '-')
+        i++;
+
+    // Verifica se todos os caracteres restantes são dígitos
+    while (str[i])
+    {
+        if (!ft_isdigit(str[i]))
+            return (0);
+        i++;
+    }
+
+    // Caso especial: apenas "+" ou "-" sem dígitos
+    if (i == 1 && (str[0] == '+' || str[0] == '-'))
+        return (0);
+
+    return (1);
+}
+
+int ft_abs(int n)
+{
+    if (n < 0)
+        return -n;
+    return n;
+}

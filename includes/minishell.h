@@ -15,6 +15,11 @@
 # include <stdbool.h>
 # include <string.h>
 
+typedef struct s_string_builder {
+    char    *buffer;
+    size_t  size;
+    size_t  capacity;
+} t_string_builder;
 
 typedef enum e_token_type
 {
@@ -68,8 +73,8 @@ int        execute(t_cmd *cmd, t_env **env);
 int        is_builtin(char *cmd);
 
 /* Builtins */
-int        ft_exit(t_cmd *cmd, t_env **env);
-int        ft_echo(t_cmd *cmd);
+int ft_exit(t_cmd *cmd);
+int ft_echo(t_cmd *cmd, t_env **env);
 int        ft_cd(t_cmd *cmd, t_env **env);
 int        ft_pwd(void);
 int        ft_export(t_cmd *cmd, t_env **env);
@@ -93,6 +98,11 @@ void       	print_error(char *cmd, char *arg, char *error);
 int			ft_isdigit_str(const char *str);
 int 		get_exit_status(void);
 void		set_exit_status(int status);
+char    *remove_quotes(char *str);
+char    *expand_variables(char *str, t_env *env, int exit_status);
+int is_valid_number(const char *str);
+int ft_abs(int n);
+int ft_itoa_buf(int n, char *buf);
 
 
 #endif
