@@ -12,6 +12,9 @@
 # include "../Libft42/libft.h"
 # include <errno.h>
 # include <limits.h>
+# include <stdbool.h>
+# include <string.h>
+
 
 typedef enum e_token_type
 {

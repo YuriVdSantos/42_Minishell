@@ -16,7 +16,7 @@ static int execute_builtin(t_cmd *cmd, t_env **env)
         return (ft_unset(cmd, env));
     else if (ft_strcmp(cmd->args[0], "env") == 0)
         return (ft_env(*env));
-    return (1);
+    return (0);
 }
 
 static void close_fds(t_cmd *cmd)
@@ -64,6 +64,19 @@ static char *get_cmd_path(char *cmd, t_env *env)
     
     ft_free_array(paths);
     return (NULL);
+}
+
+int is_builtin(char *cmd)
+{
+    if (!cmd)
+        return (0);
+    return (ft_strcmp(cmd, "exit") == 0 ||
+            ft_strcmp(cmd, "echo") == 0 ||
+            ft_strcmp(cmd, "cd") == 0 ||
+            ft_strcmp(cmd, "pwd") == 0 ||
+            ft_strcmp(cmd, "export") == 0 ||
+            ft_strcmp(cmd, "unset") == 0 ||
+            ft_strcmp(cmd, "env") == 0);
 }
 
 int execute(t_cmd *cmd, t_env **env)
@@ -117,17 +130,4 @@ int execute(t_cmd *cmd, t_env **env)
             return (WEXITSTATUS(status));
         return (1);
     }
-}
-
-int is_builtin(char *cmd)
-{
-    if (!cmd)
-        return (0);
-    return (ft_strcmp(cmd, "exit") == 0 ||
-            ft_strcmp(cmd, "echo") == 0 ||
-            ft_strcmp(cmd, "cd") == 0 ||
-            ft_strcmp(cmd, "pwd") == 0 ||
-            ft_strcmp(cmd, "export") == 0 ||
-            ft_strcmp(cmd, "unset") == 0 ||
-            ft_strcmp(cmd, "env") == 0);
 }

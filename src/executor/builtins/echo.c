@@ -1,5 +1,4 @@
 #include "minishell.h"
-#include <unistd.h>
 #include <stdbool.h>
 
 void ft_putstr_fd(char *str, int fd)
@@ -28,9 +27,14 @@ int ft_echo(t_cmd *cmd)
     bool newline;
     int i;
     char **args;
+    char *processed;
+    char *expanded;
 
     if (!cmd || !cmd->args)
-        return (1);
+    {
+        write(STDERR_FILENO, "minishell: echo: missing arguments\n", 34);
+        return (1);  // Exit code 1 para erro de sintaxe
+    }
 
     args = cmd->args;
     newline = true;
@@ -46,6 +50,13 @@ int ft_echo(t_cmd *cmd)
     // Imprime os argumentos
     while (args[i])
     {
+        // Verificação adicional para argumentos NULL
+        if (!args[i])
+        {
+            write(STDERR_FILENO, "minishell: echo: null argument\n", 31);
+            return (1);
+        }
+        
         ft_putstr_fd(args[i], STDOUT_FILENO);
         if (args[i + 1])
             write(STDOUT_FILENO, " ", 1);
@@ -54,7 +65,13 @@ int ft_echo(t_cmd *cmd)
 
     // Adiciona nova linha se necessário
     if (newline)
-        write(STDOUT_FILENO, "\n", 1);
+    {
+        if (write(STDOUT_FILENO, "\n", 1) == -1)
+        {
+            write(STDERR_FILENO, "minishell: echo: write error\n", 29);
+            return (1);  // Erro ao escrever na saída padrão
+        }
+    }
     
-    return (0);
+    return (0);  // Sucesso
 }

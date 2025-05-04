@@ -1,28 +1,19 @@
 #include "minishell.h"
 
-int ft_exit(t_cmd *cmd, t_env **env)
-{
-    int exit_code;
-    
-    ft_putendl_fd("exit", STDERR_FILENO);
-    
+int ft_exit(t_cmd *cmd) {
     if (!cmd->args[1])
-        exit_code = 0;
-    else if (cmd->args[2])
-    {
-        print_error("exit", NULL, "too many arguments");
-        return (1); // Não sai do programa, apenas retorna erro
-    }
-    else if (!ft_isdigit_str(cmd->args[1]))
-    {
-        print_error("exit", cmd->args[1], "numeric argument required");
-        exit_code = 255;
-    }
-    else
-        exit_code = get_exit_status();
+        exit(get_exit_status());
     
-    free_env(*env);
-    free_commands(cmd);
-    
-    exit(exit_code);
+    if (cmd->args[2]) {
+        ft_putstr_fd("minishell: exit: too many arguments\n", STDERR_FILENO);
+        return 1;
+    }
+
+    if (!is_valid_number(cmd->args[1])) {
+        ft_putstr_fd("minishell: exit: numeric argument required\n", STDERR_FILENO);
+        exit(255);
+    }
+
+    int status = ft_atoi(cmd->args[1]);
+    exit(status % 256); // Garante valor entre 0-255
 }
