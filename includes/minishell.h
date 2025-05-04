@@ -83,9 +83,13 @@ char       **env_to_array(t_env *env);
 t_env      *find_env_node(t_env *env, char *key);
 
 /* Utils */
-void       handle_signal(int sig);
-void       ft_free_array(char **array);
-char       *ft_strjoin_free(char *s1, char *s2);
-void       print_error(char *cmd, char *arg, char *error);
+void       	handle_signal(int sig);
+void       	ft_free_array(char **array);
+char       	*ft_strjoin_free(char *s1, char *s2);
+void       	print_error(char *cmd, char *arg, char *error);
+int			ft_isdigit_str(const char *str);
+int 		get_exit_status(void);
+void		set_exit_status(int status);
+
 
 #endif

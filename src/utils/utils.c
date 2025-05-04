@@ -40,3 +40,18 @@ void print_error(char *cmd, char *arg, char *error)
     }
     ft_putendl_fd(error, STDERR_FILENO);
 }
+
+int ft_isdigit_str(const char *str)
+{
+    if (!str || !*str)
+        return (0);
+    
+    while (*str)
+    {
+        if (!ft_isdigit(*str))
+            return (0);
+        str++;
+    }
+    return (1);
+}
+

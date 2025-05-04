@@ -78,7 +78,7 @@ char *get_pwd() {
 }
 
 // Função principal (pwd)
-void pwd() {
+void ft_pwd() {
     char *cwd = get_pwd();
     if (cwd) {
         printf("%s\n", cwd);
