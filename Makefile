@@ -16,11 +16,11 @@ SRC = $(wildcard $(SRC_DIR)/*.c) \
 OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
 
 CC = gcc
- CFLAGS = -Wall -Wextra -Werror -Iincludes -I$(LIBFT_DIR)/includes
- LDFLAGS = -L$(LIBFT_DIR) -lft -lreadline -lncurses
+#CFLAGS = -Wall -Wextra -Werror -Iincludes -I$(LIBFT_DIR)/includes
+#LDFLAGS = -L$(LIBFT_DIR) -lft -lreadline -lncurses
 
-#CFLAGS = -Wall -Wextra -Werror -Iincludes -I$(LIBFT_DIR)/includes -I/opt/homebrew/opt/readline/include
-#LDFLAGS = -L$(LIBFT_DIR) -lft -L/opt/homebrew/opt/readline/lib -lreadline -lncurses
+CFLAGS = -Wall -Wextra -Werror -Iincludes -I$(LIBFT_DIR)/includes -I/opt/homebrew/opt/readline/include
+LDFLAGS = -L$(LIBFT_DIR) -lft -L/opt/homebrew/opt/readline/lib -lreadline -lncurses
 
 all: $(NAME)
 

@@ -19,6 +19,7 @@ typedef struct s_string_builder {
     char    *buffer;
     size_t  size;
     size_t  capacity;
+    size_t  real_size;
 } t_string_builder;
 
 typedef enum e_token_type
@@ -102,7 +103,9 @@ char    *remove_quotes(char *str);
 char    *expand_variables(char *str, t_env *env, int exit_status);
 int is_valid_number(const char *str);
 int ft_abs(int n);
-int ft_itoa_buf(int n, char *buf);
-
+int     ft_itoa_buf(int n, char *buf);
+void *ft_realloc(void *ptr, size_t old_size, size_t new_size);
+void    append_string(t_string_builder *sb, const char *str);
+void    append_number(t_string_builder *sb, int num);
 
 #endif
