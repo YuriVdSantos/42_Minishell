@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/yurivieiradossantos/minishell",
-      "program": "/Users/yurivieiradossantos/minishell/build/Debug/outDebug"
+      "cwd": "/nfs/homes/yvieira-/commun_core/minishell_personal/",
+      "program": "/nfs/homes/yvieira-/commun_core/minishell_personal/minishell",
     }
   ]
 }

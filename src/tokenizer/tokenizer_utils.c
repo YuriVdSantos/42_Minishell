@@ -4,6 +4,7 @@
 
 int	is_special_char(char c)
 {
+	// printf("is_special_char: %c\n", c);
 	return (c == '|' || c == '<' || c == '>' || c == '$' || c == '~'); // CRIAR TOKEN PRO TIL
 }
 

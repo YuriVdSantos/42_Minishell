@@ -226,10 +226,6 @@ static char *extract_var_name(char *str)
     return (ft_strndup(str, i));
 }
 
-
-
-
-
 int is_valid_number(const char *str)
 {
     int i;

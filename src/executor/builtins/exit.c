@@ -56,7 +56,7 @@ int ft_exit(t_cmd *cmd)
         {
             free(unquoted);
             ft_putstr_fd("minishell: exit: numeric argument required\n", STDERR_FILENO);
-            exit(255);
+            exit(2);
         }
         status = ft_atoi(unquoted);
         free(unquoted);

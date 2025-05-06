@@ -21,16 +21,16 @@ int main(int ac, char **av, char **envp)
     {
         input = readline("\001\033[1;32m\002minishell$> \001\033[0m\002");
 
-/*         printf("Input recebido: %s\n", input);
+        // printf("Input recebido: %s\n", input);
 
-        tokens = tokenizer_input(input);
-        printf("Tokens criados? %s\n", tokens ? "Sim" : "Não"); 
+        // tokens = tokenizer_input(input);
+        // printf("Tokens criados? %s\n", tokens ? "Sim" : "Não"); 
 
-        t_cmd *cmd = parse_tokens(tokens);
-        printf("Comando parseado? %s\n", cmd ? "Sim" : "Não");
+        // t_cmd *cmd = parse_tokens(tokens);
+        // printf("Comando parseado? %s\n", cmd ? "Sim" : "Não");
 
-        int status = execute(cmd, &env);
-        printf("Status de execução: %d\n", status); */
+        // int status = execute(cmd, &env);
+        // printf("Status de execução: %d\n", status);
         if (!input)
         {
             ft_putendl_fd("exit", STDERR_FILENO);
