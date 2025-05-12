@@ -6,22 +6,24 @@ LIBFT_DIR = Libft42
 
 SRC = $(wildcard $(SRC_DIR)/*.c) \
       $(wildcard $(SRC_DIR)/parser/*.c) \
+      $(wildcard $(SRC_DIR)/executor/*.c) \
       $(wildcard $(SRC_DIR)/executor/builtins/*.c) \
       $(wildcard $(SRC_DIR)/signals/*.c) \
-      $(wildcard $(SRC_DIR)/executor/*.c) \
       $(wildcard $(SRC_DIR)/utils/*.c) \
       $(wildcard $(SRC_DIR)/environment/*.c) \
       $(wildcard $(SRC_DIR)/tokenizer/*.c) \
-      $(wildcard $(SRC_DIR)/redirect/*.c)
+      $(wildcard $(SRC_DIR)/redirect/*.c) \
+      $(wildcard $(SRC_DIR)/input/*.c) \
+      $(wildcard $(SRC_DIR)/syntax/*.c)
 
 OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -Iincludes -I$(LIBFT_DIR)/includes
-LDFLAGS = -L$(LIBFT_DIR) -lft -lreadline -lncurses
+#CFLAGS = -Wall -Wextra -Werror -Iincludes -I$(LIBFT_DIR)/includes -Isrc
+#LDFLAGS = -L$(LIBFT_DIR) -lft -lreadline -lncurses
 
-#CFLAGS = -Wall -Wextra -Werror -Iincludes -I$(LIBFT_DIR)/includes -I/opt/homebrew/opt/readline/include
-#LDFLAGS = -L$(LIBFT_DIR) -lft -L/opt/homebrew/opt/readline/lib -lreadline -lncurses
+CFLAGS = -Wall -Wextra -Werror -Iincludes -I$(LIBFT_DIR)/includes -I/opt/homebrew/opt/readline/include -Isrc
+LDFLAGS = -L$(LIBFT_DIR) -lft -L/opt/homebrew/opt/readline/lib -lreadline -lncurses
 
 all: $(NAME)
 

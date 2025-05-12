@@ -307,3 +307,30 @@ void free_string_builder(t_string_builder *sb)
     sb->size = 0;
     sb->capacity = 0;
 }
+
+void free_cmds(t_cmd *cmds)
+{
+    t_cmd *tmp;
+    
+    while (cmds)
+    {
+        tmp = cmds;
+        cmds = cmds->next;
+        
+        // Libera argumentos
+        if (tmp->args)
+        {
+            for (int i = 0; tmp->args[i]; i++)
+                free(tmp->args[i]);
+            free(tmp->args);
+        }
+        
+        // Libera redirecionamentos
+        if (tmp->in_file)
+            free(tmp->in_file);
+        if (tmp->out_file)
+            free(tmp->out_file);
+            
+        free(tmp);
+    }
+}

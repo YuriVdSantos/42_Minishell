@@ -12,3 +12,9 @@ void handle_signal(int sig)
         rl_redisplay();
     }
 }
+
+void setup_signals(void)
+{
+    signal(SIGINT, handle_signal);
+    signal(SIGQUIT, SIG_IGN);       
+}

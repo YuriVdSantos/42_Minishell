@@ -87,9 +87,3 @@ void ft_pwd() {
         perror("pwd falhou");
     }
 }
-/* 
-// Exemplo de uso
-int main() {
-    pwd();
-    return 0;
-} */

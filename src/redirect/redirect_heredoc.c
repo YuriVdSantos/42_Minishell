@@ -1,4 +1,4 @@
-#include "redirect.h"
+#include "minishell.h"
 
 static char	*tmp_filename(int heredoc_number)
 {

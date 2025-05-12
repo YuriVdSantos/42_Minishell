@@ -59,6 +59,8 @@
   "files.associations": {
     "tokenizer.h": "c",
     "minishell.h": "c",
-    "redirect.h": "c"
+    "redirect.h": "c",
+    "fcntl.h": "c",
+    "limits.h": "c"
   }
 }

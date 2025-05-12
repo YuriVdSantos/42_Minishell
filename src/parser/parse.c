@@ -111,3 +111,110 @@ void free_commands(t_cmd *cmd)
         free(tmp);
     }
 }
+
+t_cmd *parse_redirection(t_token *tokens)
+{
+    t_cmd *cmd = init_cmd();
+    t_token *current = tokens;
+    
+    while (current) {
+        if (current->type == TOKEN_REDIR_IN) {
+            cmd->in_file = current->next->value;
+        } else if (current->type == TOKEN_REDIR_OUT) {
+            cmd->out_file = current->next->value;
+            cmd->append_mode = 0;
+        } else if (current->type == TOKEN_REDIR_APPEND) {
+            cmd->out_file = current->next->value;
+            cmd->append_mode = 1;
+        } else if (current->type == TOKEN_HEREDOC) {
+            cmd->heredoc = 1;
+            cmd->in_file = handle_heredoc(current->next->value);
+        } else if (current->type == TOKEN_WORD) {
+            add_arg_to_cmd(cmd, current->value);
+        }
+        current = current->next;
+    }
+    
+    return cmd;
+}
+
+#include "minishell.h"
+
+t_cmd *parser(t_token *tokens)
+{
+    t_cmd *head = NULL;
+    t_cmd *current = NULL;
+    t_token *tmp = tokens;
+
+    while (tmp)
+    {
+        if (!head)
+        {
+            head = init_cmd();
+            current = head;
+        }
+        else
+        {
+            current->next = init_cmd();
+            current = current->next;
+        }
+        
+        if (!current)
+        {
+            free_commands(head);
+            return (NULL);
+        }
+
+        // Processa tokens até encontrar um PIPE ou final
+        while (tmp && tmp->type != TOKEN_PIPE)
+        {
+            if (tmp->type == TOKEN_REDIR_IN || tmp->type == TOKEN_REDIR_OUT || 
+                tmp->type == TOKEN_REDIR_APPEND || tmp->type == TOKEN_HEREDOC)
+            {
+                // Processa redirecionamentos
+                if (!tmp->next || tmp->next->type != TOKEN_WORD)
+                {
+                    print_error("syntax error", NULL, "missing file for redirection");
+                    free_commands(head);
+                    return (NULL);
+                }
+
+                if (tmp->type == TOKEN_REDIR_IN)
+                    current->in_file = ft_strdup(tmp->next->value);
+                else if (tmp->type == TOKEN_REDIR_OUT)
+                {
+                    current->out_file = ft_strdup(tmp->next->value);
+                    current->append_mode = 0;
+                }
+                else if (tmp->type == TOKEN_REDIR_APPEND)
+                {
+                    current->out_file = ft_strdup(tmp->next->value);
+                    current->append_mode = 1;
+                }
+                else if (tmp->type == TOKEN_HEREDOC)
+                {
+                    current->heredoc = 1;
+                    current->in_file = handle_heredoc(tmp->next->value);
+                }
+                tmp = tmp->next->next;  // Avança dois tokens (redirecionamento + arquivo)
+            }
+            else if (tmp->type == TOKEN_WORD || tmp->type == TOKEN_QUOTE || 
+                    tmp->type == TOKEN_DQUOTE)
+            {
+                // Adiciona argumentos normais
+                add_arg_to_cmd(current, tmp->value);
+                tmp = tmp->next;
+            }
+            else
+            {
+                tmp = tmp->next;
+            }
+        }
+
+        // Avança além do PIPE se existir
+        if (tmp && tmp->type == TOKEN_PIPE)
+            tmp = tmp->next;
+    }
+
+    return (head);
+}

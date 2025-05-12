@@ -1,20 +1,14 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   executor.c                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: yurivieiradossantos <yurivieiradossanto    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/12 12:36:52 by yurivieirad       #+#    #+#             */
-/*   Updated: 2025/05/12 12:39:40 by yurivieirad      ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-
-#include "./../redirect/redirect.h"
 #include "minishell.h"
 
-static int execute_builtin(t_cmd *cmd, t_env **env)
+void cleanup_redirections(t_cmd *cmd)
+{
+    if (cmd->in_fd != STDIN_FILENO)
+        close(cmd->in_fd);
+    if (cmd->out_fd != STDOUT_FILENO)
+        close(cmd->out_fd);
+}
+
+int execute_builtin(t_cmd *cmd, t_env **env)
 {
     if (ft_strcmp(cmd->args[0], "exit") == 0)
         return (ft_exit(cmd));
@@ -33,7 +27,7 @@ static int execute_builtin(t_cmd *cmd, t_env **env)
     return (0);
 }
 
-static void close_fds(t_cmd *cmd)
+void close_fds(t_cmd *cmd)
 {
     if (cmd->in_fd != STDIN_FILENO)
         close(cmd->in_fd);
@@ -41,7 +35,7 @@ static void close_fds(t_cmd *cmd)
         close(cmd->out_fd);
 }
 
-static char *get_cmd_path(char *cmd, t_env *env)
+char *get_cmd_path(char *cmd, t_env *env)
 {
     char *path;
     char *path_env;
@@ -52,8 +46,13 @@ static char *get_cmd_path(char *cmd, t_env *env)
     if (!cmd || !*cmd)
         return (NULL);
     
+    // Se o comando já tem um path absoluto ou relativo
     if (ft_strchr(cmd, '/'))
-        return (ft_strdup(cmd));
+    {
+        if (stat(cmd, &st) == 0 && (st.st_mode & S_IXUSR))
+            return (ft_strdup(cmd));
+        return (NULL);
+    }
     
     path_env = get_env_value(env, "PATH");
     if (!path_env)
@@ -80,6 +79,27 @@ static char *get_cmd_path(char *cmd, t_env *env)
     return (NULL);
 }
 
+int handle_redirections(t_cmd *cmd)
+{
+    // Handle input redirection
+    if (cmd->in_redirect)
+    {
+        if (cmd->heredoc_number > 0)
+            redirect_heredoc(cmd->in_redirect, cmd->heredoc_number);
+        else if (redirect_input(cmd->in_redirect) == FAILED)
+            return (1);
+    }
+
+    // Handle output redirection
+    if (cmd->out_redirect)
+    {
+        if (redirect_output(cmd->out_redirect) == FAILED)
+            return (1);
+    }
+
+    return (0);
+}
+
 int is_builtin(char *cmd)
 {
     if (!cmd)
@@ -93,53 +113,39 @@ int is_builtin(char *cmd)
             ft_strcmp(cmd, "env") == 0);
 }
 
-int execute(t_cmd *cmd, t_env **env)
+int execute_command(t_cmd *cmd, t_env **env)
 {
-    pid_t pid;
     int status;
+    pid_t pid;
     char *path;
-    
+
     if (!cmd || !cmd->args || !cmd->args[0])
         return (1);
-    
+
+    // Handle redirections first
+    if (setup_redirections(cmd) != 0)
+        return (1);
+
     if (is_builtin(cmd->args[0]))
         return (execute_builtin(cmd, env));
-    
-    path = get_cmd_path(cmd->args[0], *env);
-    if (!path)
-    {
-        print_error(cmd->args[0], NULL, "command not found");
-        return (127);
-    }
-    
+
     pid = fork();
-    if (pid == -1)
-    {
-        free(path);
-        perror("fork");
-        return (1);
-    }
-    else if (pid == 0)
-    {
-        if (cmd->in_fd != STDIN_FILENO)
-            dup2(cmd->in_fd, STDIN_FILENO);
-        if (cmd->out_fd != STDOUT_FILENO)
-            dup2(cmd->out_fd, STDOUT_FILENO);
-        
-        close_fds(cmd);
-        
+    if (pid == 0) {
+        // Child process
+        path = get_cmd_path(cmd->args[0], *env);
+        if (!path) {
+            print_error(cmd->args[0], NULL, "command not found");
+            exit(127);
+        }
+
         char **env_array = env_to_array(*env);
         execve(path, cmd->args, env_array);
-        ft_free_array(env_array);
-        free(path);
-        print_error(cmd->args[0], NULL, "execve failed");
+        print_error("execve", cmd->args[0], strerror(errno));
         exit(126);
-    }
-    else
-    {
-        free(path);
-        close_fds(cmd);
+    } else {
+        // Parent process
         waitpid(pid, &status, 0);
+        cleanup_redirections(cmd);
         if (WIFEXITED(status))
             return (WEXITSTATUS(status));
         return (1);

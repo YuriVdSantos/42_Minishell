@@ -1,63 +1,56 @@
 #include "minishell.h"
 
-int main(int ac, char **av, char **envp)
+static void	initialize_shell(char **envp, t_env **env)
 {
-    char    *input;
-    t_token *tokens;
-    t_cmd   *commands;
-    t_env   *env;
+	*env = init_env(envp);
+	if (!*env)
+	{
+		ft_putstr_fd("minishell: error initializing environment\n", STDERR_FILENO);
+		exit(EXIT_FAILURE);
+	}
+	setup_signals();
+}
 
-    (void)ac;
-    (void)av;
-    
-    env = init_env(envp);
-    if (!env)
-        return (1);
-    
-    signal(SIGINT, handle_signal);
-    signal(SIGQUIT, SIG_IGN);
-    
-    while (1)
-    {
-        input = readline("\001\033[1;32m\002minishell$> \001\033[0m\002");
+void	main_loop(t_env *env)
+{
+	char	*input;
+	t_token	*tokens;
+	t_cmd	*cmds;
+	int		status;
 
-        // printf("Input recebido: %s\n", input);
-
-        // tokens = tokenizer_input(input);
-        // printf("Tokens criados? %s\n", tokens ? "Sim" : "Não"); 
-
-        // t_cmd *cmd = parse_tokens(tokens);
-        // printf("Comando parseado? %s\n", cmd ? "Sim" : "Não");
-
-        // int status = execute(cmd, &env);
-        // printf("Status de execução: %d\n", status);
-        if (!input)
-        {
-            ft_putendl_fd("exit", STDERR_FILENO);
-            break;
-        }
-        
-        if (*input)
-            add_history(input);
-        
+	while (1)
+	{
+		input = readline("minishell> ");
+		if (!input)
+		{
+			ft_putendl_fd("exit", STDOUT_FILENO);
+			break ;
+		}
+		if (*input)
+			add_history(input);
         tokens = tokenizer_input(input);
-        if (!tokens)
-        {
-            free(input);
-            continue;
-        }
-        
-        commands = parse_tokens(tokens);
-        free_tokens(tokens);
-        free(input);
-        
-        if (commands)
-        {
-            set_exit_status(execute(commands, &env));
-            free_commands(commands);
-        }
-    }
-    
-    free_env(env);
-    return (get_exit_status());
+		cmds = parser(tokens);
+		if (has_input_error(input, &status, env))
+			continue ;
+		if (cmds->next)
+			status = execute_pipeline(cmds, &env);
+		else
+			status = execute_command(cmds, &env);
+		set_exit_status(status);
+		free_cmds(cmds);
+		free_tokens(tokens);
+		free(input);
+	}
+}
+
+int	main(int argc, char **argv, char **envp)
+{
+	t_env	*env;
+
+	(void)argc;
+	(void)argv;
+	initialize_shell(envp, &env);
+	main_loop(env);
+	free_env(env);
+	return (get_exit_status());
 }

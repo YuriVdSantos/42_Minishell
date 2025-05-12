@@ -1,4 +1,4 @@
-#include "redirect.h"
+#include "minishell.h"
 
 char	*get_redirect_position(char *str, char redirect_char)
 {
