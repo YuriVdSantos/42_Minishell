@@ -58,6 +58,7 @@
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "files.associations": {
     "tokenizer.h": "c",
-    "minishell.h": "c"
+    "minishell.h": "c",
+    "redirect.h": "c"
   }
 }

@@ -1,4 +1,17 @@
-#include "../redirect/redirect.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   executor.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yurivieiradossantos <yurivieiradossanto    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/12 12:36:52 by yurivieirad       #+#    #+#             */
+/*   Updated: 2025/05/12 12:39:40 by yurivieirad      ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+
+#include "./../redirect/redirect.h"
 #include "minishell.h"
 
 static int execute_builtin(t_cmd *cmd, t_env **env)
