@@ -9,9 +9,10 @@ SRC = $(wildcard $(SRC_DIR)/*.c) \
       $(wildcard $(SRC_DIR)/executor/builtins/*.c) \
       $(wildcard $(SRC_DIR)/signals/*.c) \
       $(wildcard $(SRC_DIR)/executor/*.c) \
-      $(wildcard $(SRC_DIR)/utils/*.c)\
-      $(wildcard $(SRC_DIR)/environment/*.c)\
-      $(wildcard $(SRC_DIR)/tokenizer/*.c)
+      $(wildcard $(SRC_DIR)/utils/*.c) \
+      $(wildcard $(SRC_DIR)/environment/*.c) \
+      $(wildcard $(SRC_DIR)/tokenizer/*.c) \
+      $(wildcard $(SRC_DIR)/redirect/*.c)
 
 OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
 

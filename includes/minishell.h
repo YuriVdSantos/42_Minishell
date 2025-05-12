@@ -49,14 +49,15 @@ typedef struct s_env
     struct s_env   *next;
 }   t_env;
 
-typedef struct s_cmd
-{
-    char           **args;
-    int            in_fd;
-    int            out_fd;
-    struct s_cmd   *next;
-}   t_cmd;
-
+typedef struct s_cmd {
+    char **args;
+    int in_fd;
+    int out_fd;
+    char *in_redirect;   // para < e <<
+    char *out_redirect;  // para > e >>
+    int heredoc_number;  // número do heredoc
+    struct s_cmd *next;
+} t_cmd;
 
 t_cmd    *parse_tokens(t_token *tokens);
 void     free_commands(t_cmd *cmd);

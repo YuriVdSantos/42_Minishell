@@ -1,3 +1,4 @@
+#include "../redirect/redirect.h"
 #include "minishell.h"
 
 static int execute_builtin(t_cmd *cmd, t_env **env)
