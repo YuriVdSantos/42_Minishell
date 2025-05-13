@@ -49,7 +49,7 @@ int has_input_error(char *input, int *exit_status, t_env *env)
         *exit_status = 2;
         return (TRUE);
     }
-	if (exec_heredoc(input, 1, exit_status, env) == FAILURE)
+	if (exec_heredoc(input, 1, exit_status, env) == FAILURE) //deveria entrar aqui ?
         return (TRUE);
     return (FALSE);
 }
