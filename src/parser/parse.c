@@ -138,8 +138,6 @@ t_cmd *parse_redirection(t_token *tokens)
     return cmd;
 }
 
-#include "minishell.h"
-
 t_cmd *parser(t_token *tokens)
 {
     t_cmd *head = NULL;
@@ -215,6 +213,6 @@ t_cmd *parser(t_token *tokens)
         if (tmp && tmp->type == TOKEN_PIPE)
             tmp = tmp->next;
     }
-
+    printf("Parsed command: %s\n", current->args[0]);
     return (head);
 }

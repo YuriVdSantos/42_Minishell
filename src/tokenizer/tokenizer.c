@@ -54,6 +54,7 @@ t_token	*tokenizer_input(char *input)
 			curr = new_node;
 		}
 	}
+	// printf("head: %s\n", head->value);
 	return (head);
 }
 

@@ -2,6 +2,7 @@
 
 int setup_redirections(t_cmd *cmd)
 {
+    //validar in_file e flow
     if (cmd->in_file) {
         cmd->in_fd = open(cmd->in_file, O_RDONLY);
         if (cmd->in_fd == -1) {
@@ -17,7 +18,7 @@ int setup_redirections(t_cmd *cmd)
         
         cmd->out_fd = open(cmd->out_file, flags, 0644);
         if (cmd->out_fd == -1) {
-            print_error("open", cmd->out_file, strerror(errno));
+            // print_error("open", cmd->out_file, strerror(errno));
             return (1);
         }
         dup2(cmd->out_fd, STDOUT_FILENO);
