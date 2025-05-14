@@ -36,7 +36,8 @@ int has_unclosed_quotes(char *input)
 
 int has_input_error(char *input, int *exit_status, t_env *env)
 {
-	(void)env;
+    (void)env;
+    
     if (is_empty(input))
         return (TRUE);
     if (has_unclosed_quotes(input))
@@ -44,12 +45,17 @@ int has_input_error(char *input, int *exit_status, t_env *env)
         *exit_status = 2;
         return (TRUE);
     }
-    if (is_invalid_syntax(input))  // Usa a função definida em syntax.c
+    if (is_invalid_syntax(input))
     {
         *exit_status = 2;
         return (TRUE);
     }
-	if (exec_heredoc(input, 1, exit_status, env) == FAILURE) //deveria entrar aqui ?
-        return (TRUE);
+    
+    if (strstr(input, "<<"))
+    {
+        if (exec_heredoc(input, 1, exit_status, env) == FAILURE)
+            return (TRUE);
+    }
+    
     return (FALSE);
 }

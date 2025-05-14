@@ -11,36 +11,52 @@ static void	initialize_shell(char **envp, t_env **env)
 	setup_signals();
 }
 
-void	main_loop(t_env *env)
+void main_loop(t_env *env)
 {
-	char	*input;
-	t_token	*tokens;
-	t_cmd	*cmds;
-	int		status;
+    char    *input;
+    t_token *tokens;
+    t_cmd   *cmds;
+    int     status;
 
-	while (1)
-	{
-		input = readline("minishell> ");
-		if (!input)
-		{
-			ft_putendl_fd("exit", STDOUT_FILENO);
-			break ;
-		}
-		if (*input)
-			add_history(input);
+    while (1)
+    {
+        input = readline("minishell> ");
+        if (!input)
+        {
+            ft_putendl_fd("exit", STDOUT_FILENO);
+            break;
+        }
+        
+        if (*input)
+            add_history(input);
+        
+        // 1. Verifica erros básicos (não inclui heredoc aqui)
+        if (is_empty(input) || has_unclosed_quotes(input) || is_invalid_syntax(input))
+        {
+            free(input);
+            continue;
+        }
+        
+        // 2. Processa tokens
         tokens = tokenizer_input(input);
-		cmds = parser(tokens);
-		if (has_input_error(input, &status, env))
-			continue ;
-		if (cmds->next)
-			status = execute_pipeline(cmds, &env);
-		else
-			status = execute_command(cmds, &env);
-		set_exit_status(status);
-		free_cmds(cmds);
-		free_tokens(tokens);
-		free(input);
-	}
+        
+        // 3. Parse dos comandos (identifica heredocs aqui)
+        cmds = parser(tokens, env);
+        
+        // 4. Execução
+        if (cmds)
+        {
+            if (cmds->next)
+                status = execute_pipeline(cmds, &env);
+            else
+                status = execute_command(cmds, &env);
+            set_exit_status(status);
+            free_cmds(cmds);
+        }
+        
+        free_tokens(tokens);
+        free(input);
+    }
 }
 
 int	main(int argc, char **argv, char **envp)

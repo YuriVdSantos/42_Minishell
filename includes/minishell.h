@@ -165,7 +165,7 @@ void	redirect_heredoc(char *command, int heredoc_number);
 
 void setup_signals(void);
 t_token *tokenizer(char *input);
-t_cmd *parser(t_token *tokens);
+t_cmd *parser(t_token *tokens, t_env *env);
 int execute_pipeline(t_cmd *cmds, t_env **env);
 int execute_command(t_cmd *cmd, t_env **env);
 void free_cmds(t_cmd *cmd);

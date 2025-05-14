@@ -2,14 +2,18 @@
 
 int setup_redirections(t_cmd *cmd)
 {
-    //validar in_file e flow
     if (cmd->in_file) {
         cmd->in_fd = open(cmd->in_file, O_RDONLY);
         if (cmd->in_fd == -1) {
-            print_error("open", cmd->in_file, strerror(errno));
+            print_error(cmd->args[0], cmd->in_file, strerror(errno));
             return (1);
         }
-        dup2(cmd->in_fd, STDIN_FILENO);
+        if (dup2(cmd->in_fd, STDIN_FILENO) == -1) {
+            print_error("dup2", NULL, strerror(errno));
+            close(cmd->in_fd);
+            return (1);
+        }
+        close(cmd->in_fd);
     }
     
     if (cmd->out_file) {
@@ -18,10 +22,15 @@ int setup_redirections(t_cmd *cmd)
         
         cmd->out_fd = open(cmd->out_file, flags, 0644);
         if (cmd->out_fd == -1) {
-            // print_error("open", cmd->out_file, strerror(errno));
+            print_error(cmd->args[0], cmd->out_file, strerror(errno));
             return (1);
         }
-        dup2(cmd->out_fd, STDOUT_FILENO);
+        if (dup2(cmd->out_fd, STDOUT_FILENO) == -1) {
+            print_error("dup2", NULL, strerror(errno));
+            close(cmd->out_fd);
+            return (1);
+        }
+        close(cmd->out_fd);
     }
     
     return (0);

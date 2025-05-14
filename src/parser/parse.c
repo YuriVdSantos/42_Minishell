@@ -138,14 +138,16 @@ t_cmd *parse_redirection(t_token *tokens)
     return cmd;
 }
 
-t_cmd *parser(t_token *tokens)
+t_cmd *parser(t_token *tokens, t_env *env)
 {
     t_cmd *head = NULL;
     t_cmd *current = NULL;
     t_token *tmp = tokens;
+    int heredoc_count = 1; // Contador para numerar os heredocs
 
     while (tmp)
     {
+        // Inicializa novo comando
         if (!head)
         {
             head = init_cmd();
@@ -163,13 +165,14 @@ t_cmd *parser(t_token *tokens)
             return (NULL);
         }
 
-        // Processa tokens até encontrar um PIPE ou final
+        // Processa tokens até encontrar PIPE ou final
         while (tmp && tmp->type != TOKEN_PIPE)
         {
+            // Trata redirecionamentos
             if (tmp->type == TOKEN_REDIR_IN || tmp->type == TOKEN_REDIR_OUT || 
                 tmp->type == TOKEN_REDIR_APPEND || tmp->type == TOKEN_HEREDOC)
             {
-                // Processa redirecionamentos
+                // Verifica se há arquivo/delimitador após redirecionamento
                 if (!tmp->next || tmp->next->type != TOKEN_WORD)
                 {
                     print_error("syntax error", NULL, "missing file for redirection");
@@ -177,30 +180,50 @@ t_cmd *parser(t_token *tokens)
                     return (NULL);
                 }
 
+                // Processa cada tipo de redirecionamento
                 if (tmp->type == TOKEN_REDIR_IN)
+                {
                     current->in_file = ft_strdup(tmp->next->value);
+                    current->in_redirect = ft_strdup(tmp->next->value);
+                }
                 else if (tmp->type == TOKEN_REDIR_OUT)
                 {
                     current->out_file = ft_strdup(tmp->next->value);
+                    current->out_redirect = ft_strdup(tmp->next->value);
                     current->append_mode = 0;
                 }
                 else if (tmp->type == TOKEN_REDIR_APPEND)
                 {
                     current->out_file = ft_strdup(tmp->next->value);
+                    current->out_redirect = ft_strdup(tmp->next->value);
                     current->append_mode = 1;
                 }
                 else if (tmp->type == TOKEN_HEREDOC)
                 {
                     current->heredoc = 1;
-                    current->in_file = handle_heredoc(tmp->next->value);
+                    current->heredoc_number = heredoc_count++;
+                    current->in_file = ft_strdup(tmp->next->value);
+                    
+                    // Executa o heredoc imediatamente
+                    int exit_status = 0;
+                    if (exec_heredoc(tmp->next->value, current->heredoc_number, &exit_status, env) == FAILURE)
+                    {
+                        free_commands(head);
+                        return (NULL);
+                    }
                 }
                 tmp = tmp->next->next;  // Avança dois tokens (redirecionamento + arquivo)
             }
+            // Adiciona argumentos normais (comandos e seus parâmetros)
             else if (tmp->type == TOKEN_WORD || tmp->type == TOKEN_QUOTE || 
                     tmp->type == TOKEN_DQUOTE)
             {
-                // Adiciona argumentos normais
-                add_arg_to_cmd(current, tmp->value);
+                // Remove aspas se necessário e expande variáveis
+                char *processed = remove_quotes(tmp->value);
+                char *expanded = expand_variables(processed, env, get_exit_status());
+                add_arg_to_cmd(current, expanded);
+                free(processed);
+                free(expanded);
                 tmp = tmp->next;
             }
             else
@@ -213,6 +236,6 @@ t_cmd *parser(t_token *tokens)
         if (tmp && tmp->type == TOKEN_PIPE)
             tmp = tmp->next;
     }
-    printf("Parsed command: %s\n", current->args[0]);
+    
     return (head);
 }
