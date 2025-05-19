@@ -31,8 +31,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/yurivieiradossantos/minishell/src/parser",
-      "program": "/Users/yurivieiradossantos/minishell/src/parser/build/Debug/outDebug"
+      "cwd": "/Users/yurivieiradossantos/minishell",
+      "program": "/Users/yurivieiradossantos/minishell/minishell",
     }
   ]
 }

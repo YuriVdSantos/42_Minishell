@@ -63,8 +63,11 @@ int	main(int argc, char **argv, char **envp)
 {
 	t_env	*env;
 
-	(void)argc;
-	(void)argv;
+    if (argv && argc > 1)
+    {
+        ft_putstr_fd("minishell: no arguments expected\n", STDERR_FILENO);
+        return (EXIT_FAILURE);
+    }
 	initialize_shell(envp, &env);
 	main_loop(env);
 	free_env(env);
