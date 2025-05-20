@@ -1,49 +1,65 @@
-NAME = minishell
+NAME	=	minishell
+# CFLAGS	=	-Wall -Wextra -Werror -g
+CFLAGS	=	-Wall -Wextra -Werror -g -I./includes -I./libft/includes -I/opt/homebrew/opt/readline/include
+LDLIBS	=	-lreadline -lft
+# LDFLAGS	+= 	-L./libft
+LDFLAGS	=	-L./libft -L/opt/homebrew/opt/readline/lib
+OBJ_DIR	=	obj
+OBJS	=	$(SRCS:%.c=$(OBJ_DIR)/%.o)
+SRCS	=	$(MAIN) $(MINIENV) $(BUILTINS) $(EXECUTES) $(REDIRECTS) $(UTILS) \
+			$(EXPANDS) $(SYNTAX)
+MAIN	=	main.c minishell.c prompt.c split_commands.c handle_heredoc.c\
+			input_error.c
+SYNTAX	=	syntax.c syntax_utils.c
+MINIENV	=	minienv.c minienv_utils.c minienv_str_utils.c free_minienv.c
+BUILTINS =	builtins_utils.c echo.c cd.c pwd.c export.c unset.c env.c exit.c
+EXECUTES =	execute_one_command.c execute_multiple_commands.c wait.c \
+			execute_external.c execute_builtin.c split_args.c get_path.c \
+			one_command_utils.c multiple_commands_utils.c pipes.c
+REDIRECTS =	redirect_utils.c redirect_input.c redirect_output.c \
+			redirect_heredoc.c
+UTILS	=	error.c quote_checker.c signals.c str_utils.c str_checkers.c \
+			ft_atoll.c free_array.c arr_len.c file_descriptors.c \
+			get_label_name.c skip_quotes.c
+EXPANDS	=	handle_expansions.c expand_variables.c expand_exit_status.c \
+			variables_utils.c
+LIBFT_A	=	./libft/libft.a
+HEADER	=	minishell.h allowed_libs.h builtins.h errors.h executes.h minienv.h
+VPATH	=	builtins minienv utils executes src redirects includes expansions \
+			syntax
+INCLUDE	=	-I ./ -I ./includes
 
-SRC_DIR = src
-OBJ_DIR = obj
-LIBFT_DIR = Libft42
-
-SRC = $(wildcard $(SRC_DIR)/*.c) \
-      $(wildcard $(SRC_DIR)/parser/*.c) \
-      $(wildcard $(SRC_DIR)/executor/*.c) \
-      $(wildcard $(SRC_DIR)/executor/builtins/*.c) \
-      $(wildcard $(SRC_DIR)/signals/*.c) \
-      $(wildcard $(SRC_DIR)/utils/*.c) \
-      $(wildcard $(SRC_DIR)/environment/*.c) \
-      $(wildcard $(SRC_DIR)/tokenizer/*.c) \
-      $(wildcard $(SRC_DIR)/redirect/*.c) \
-      $(wildcard $(SRC_DIR)/input/*.c) \
-      $(wildcard $(SRC_DIR)/syntax/*.c)
-
-OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
-
-CC = gcc
-#CFLAGS = -Wall -Wextra -Werror -Iincludes -g -I$(LIBFT_DIR)/includes -Isrc
-#LDFLAGS = -L$(LIBFT_DIR) -lft -lreadline -lncurses
-
-CFLAGS = -Wall -Wextra -Werror -g -Iincludes -I$(LIBFT_DIR)/includes -I/opt/homebrew/opt/readline/include -Isrc
-LDFLAGS = -L$(LIBFT_DIR) -lft -L/opt/homebrew/opt/readline/lib -lreadline -lncurses
 
 all: $(NAME)
 
-$(NAME): $(OBJ)
-	@make -C $(LIBFT_DIR)
-	@$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-	@echo "Minishell compiled successfully!"
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(@D)
-	@$(CC) $(CFLAGS) -c $< -o $@
+run: $(NAME)
+	./$(NAME)
 
 clean:
-	@rm -rf $(OBJ_DIR)
-	@make clean -C $(LIBFT_DIR)
+	@rm -rf obj
+	@echo "removed obj folder"
 
 fclean: clean
-	@rm -f $(NAME)
-	@make fclean -C $(LIBFT_DIR)
+	@rm -rf $(NAME) $(NAME_BONUS)
+	@echo "removed executable"
 
 re: fclean all
 
-.PHONY: all clean fclean re
+$(LIBFT_A):
+	make --directory=./libft
+
+$(NAME): $(LIBFT_A) $(OBJ_DIR) $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(NAME) $(LDLIBS) $(LDFLAGS)
+
+$(NAME_BONUS): $(LIBFT_A) $(OBJ_DIR) $(OBJS_BONUS)
+	$(CC) $(CFLAGS) $(OBJS_BONUS) -o $(NAME_BONUS) $(LDLIBS) $(LDFLAGS)
+
+$(OBJ_DIR)/%.o: %.c $(HEADER)
+	$(CC) $(CFLAGS) -c $< -o $@ $(INCLUDE)
+
+$(OBJ_DIR):
+	mkdir -p $@
+
+# leak: all
+# 	valgrind --suppressions=./local.supp --leak-check=full \
+# 	--show-leak-kinds=all --track-fds=yes --trace-children=yes ./$(NAME)
