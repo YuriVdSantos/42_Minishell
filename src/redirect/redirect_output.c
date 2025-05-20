@@ -1,30 +1,33 @@
 #include "minishell.h"
 
-int	redirect_output(char *command)
+int redirect_output(char *command) 
 {
-	char	*output_redirect;
-	char	*file_name;
-	int		fd;
-	int		open_flags;
+    char *redirect_pos;
+    char *filename;
+    int output_fd;
+    int open_flags;
 
-	output_redirect = get_redirect_position(command, '>');
-	if (!output_redirect)
-		return (SUCCESS);
-	if (output_redirect[1] == '>')
-		open_flags = O_WRONLY | O_CREAT | O_APPEND;
-	else
-		open_flags = O_WRONLY | O_CREAT | O_TRUNC;
-	file_name = get_label_name(output_redirect);
-	if (!file_name)
-		return (FAILED);
-	fd = open(file_name, open_flags, 0644);
-	if (fd == -1)
-	{
-		print_error("open", file_name, strerror(errno));
-		free(file_name);
-		return (FAILED);
-	}
-	redirect_fd(fd, STDOUT_FILENO);
-	free(file_name);
-	return (SUCCESS);
+    redirect_pos = get_redirect_position(command, OUTPUT_REDIRECT_CHAR);
+    if (!redirect_pos) {
+        return SUCCESS;
+    }
+
+    open_flags = (redirect_pos[1] == OUTPUT_REDIRECT_CHAR) ? 
+                 APPEND_FLAGS : TRUNCATE_FLAGS;
+
+    filename = get_label_name(redirect_pos);
+    if (!filename) {
+        return FAILED;
+    }
+
+    output_fd = open(filename, open_flags, FILE_PERMISSIONS);
+    if (output_fd == -1) {
+        print_error_msg("open", filename);
+        free(filename);
+        return FAILED;
+    }
+
+    redirect_fd(output_fd, STDOUT_FILENO);
+    free(filename);
+    return SUCCESS;
 }

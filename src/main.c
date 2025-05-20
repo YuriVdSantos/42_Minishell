@@ -1,75 +1,118 @@
 #include "minishell.h"
 
-static void	initialize_shell(char **envp, t_env **env)
+static void initialize_shell(char **envp, t_context *ctx)
 {
-	*env = init_env(envp);
-	if (!*env)
-	{
-		ft_putstr_fd("minishell: error initializing environment\n", STDERR_FILENO);
-		exit(EXIT_FAILURE);
-	}
-	setup_signals();
+    ft_memset(ctx, 0, sizeof(t_context)); // Garante que todos os campos são inicializados como 0/NULL
+    
+    ctx->env = init_env(envp);
+    if (!ctx->env)
+    {
+        ft_putstr_fd("minishell: error initializing environment\n", STDERR_FILENO);
+        exit(EXIT_FAILURE);
+    }
+    ctx->is_interactive = isatty(STDIN_FILENO);
+    tcgetattr(STDIN_FILENO, &ctx->original_termios);
+    setup_interactive_signals(ctx);
 }
 
-void main_loop(t_env *env)
+static int validate_input(t_context *ctx)
 {
-    char    *input;
-    t_token *tokens;
-    t_cmd   *cmds;
-    int     status;
-
-    while (1)
+    if (!ctx->input)  // Verificação adicional para NULL
+        return 0;
+        
+    if (is_empty(ctx->input))
     {
-        input = readline("minishell> ");
-        if (!input)
+        ctx->exit_status = 0;
+        return 0;
+    }
+    if (has_unclosed_quotes(ctx->input))
+    {
+        print_error_msg(NULL, "unclosed quotes");
+        ctx->exit_status = 2;
+        return 0;
+    }
+    if (is_invalid_syntax(ctx->input))
+    {
+        ctx->exit_status = 2;
+        return 0;
+    }
+    return 1;
+}
+
+static void process_input(t_context *ctx)
+{
+    if (!validate_input(ctx))
+        return;
+        
+    ctx->tokens = tokenizer_input(ctx->input);
+    if (!ctx->tokens)
+        return;
+        
+    ctx->cmd = parser(ctx->tokens, ctx->env);
+    if (!ctx->cmd)
+        return;
+        
+    if (ctx->cmd->next)
+        ctx->exit_status = execute_pipeline(ctx->cmd, &ctx->env);
+    else
+        ctx->exit_status = execute_command(ctx->cmd, &ctx->env);
+}
+
+static void cleanup_loop(t_context *ctx)
+{
+    if (ctx->tokens)
+    {
+        free_tokens(ctx->tokens);
+        ctx->tokens = NULL;
+    }
+    if (ctx->cmd)
+    {
+        free_cmds(ctx->cmd);
+        ctx->cmd = NULL;
+    }
+    if (ctx->input)
+    {
+        free(ctx->input);
+        ctx->input = NULL;
+    }
+}
+
+void main_loop(t_context *ctx)
+{
+    while (!ctx->sigint_received)
+    {
+        ctx->input = readline("minishell> ");
+        if (!ctx->input)
         {
-            ft_putendl_fd("exit", STDOUT_FILENO);
+            if (ctx->is_interactive)
+                ft_putendl_fd("exit", STDOUT_FILENO);
             break;
         }
         
-        if (*input)
-            add_history(input);
-        
-        // 1. Verifica erros básicos (não inclui heredoc aqui)
-        if (is_empty(input) || has_unclosed_quotes(input) || is_invalid_syntax(input))
+        if (*(ctx->input))
         {
-            free(input);
-            continue;
+            add_history(ctx->input);
+            process_input(ctx);
         }
-        
-        // 2. Processa tokens
-        tokens = tokenizer_input(input);
-        
-        // 3. Parse dos comandos (identifica heredocs aqui)
-        cmds = parser(tokens, env);
-        
-        // 4. Execução
-        if (cmds)
-        {
-            if (cmds->next)
-                status = execute_pipeline(cmds, &env);
-            else
-                status = execute_command(cmds, &env);
-            set_exit_status(status);
-            free_cmds(cmds);
-        }
-        
-        free_tokens(tokens);
-        free(input);
+        cleanup_loop(ctx);
     }
 }
 
-int	main(int argc, char **argv, char **envp)
+int main(int argc, char **argv, char **envp)
 {
-	t_env	*env;
+    t_context ctx;
 
-    if (argv && argc > 1)
+    if (argc > 1 && argv)
     {
-        ft_putstr_fd("minishell: no arguments expected\n", STDERR_FILENO);
+        print_error_msg("minishell", "no arguments expected");
         return (EXIT_FAILURE);
     }
-	initialize_shell(envp, &env);
-	main_loop(env);
-	free_env(env);
-	return (get_exit_status());
+    
+    initialize_shell(envp, &ctx);
+    main_loop(&ctx);
+    
+    // Restaurar configurações do terminal
+    tcsetattr(STDIN_FILENO, TCSANOW, &ctx.original_termios);
+    free_env(ctx.env);
+    return (ctx.exit_status);
 }

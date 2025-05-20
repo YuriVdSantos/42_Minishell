@@ -1,14 +1,105 @@
 #include "minishell.h"
 
-void cleanup_redirections(t_cmd *cmd)
+void define_execute_signals(int child_pid)
 {
-    if (cmd->in_fd != STDIN_FILENO)
-        close(cmd->in_fd);
-    if (cmd->out_fd != STDOUT_FILENO)
-        close(cmd->out_fd);
+    struct sigaction sa;
+
+    if (child_pid == 0)
+    {
+        init_sigaction(&sa, SIG_DFL, 0);
+        sigaction(SIGINT, &sa, NULL);
+        sigaction(SIGQUIT, &sa, NULL);
+    }
+    else
+    {
+        init_sigaction(&sa, SIG_IGN, 0);
+        sigaction(SIGINT, &sa, NULL);
+        sigaction(SIGQUIT, &sa, NULL);
+    }
+}
+static void setup_pipe_redirections(int in_fd, int pipe_fds[2], int has_next)
+{
+    if (in_fd != -1)
+    {
+        dup2(in_fd, STDIN_FILENO);
+        close(in_fd);
+    }
+    if (has_next)
+    {
+        dup2(pipe_fds[1], STDOUT_FILENO);
+        close(pipe_fds[1]);
+    }
 }
 
-int execute_builtin(t_cmd *cmd, t_env **env)
+void close_pipe_ends(int in_fd, int pipe_fds[2], int has_next)
+{
+    if (in_fd != -1)
+        close(in_fd);
+    if (has_next)
+        close(pipe_fds[1]);
+}
+
+int handle_signal_status(int status, int is_last_child)
+{
+    if (WTERMSIG(status) == SIGINT)
+    {
+        if (is_last_child)
+            ft_putstr_fd("\n", STDOUT_FILENO);
+        return (128 + SIGINT);
+    }
+    if (WTERMSIG(status) == SIGQUIT && is_last_child)
+    {
+        ft_putstr_fd("Quit\n", STDOUT_FILENO);
+        return (128 + SIGQUIT);
+    }
+    return (EXIT_FAILURE);
+}
+
+static int handle_input_redirect(t_cmd *cmd)
+{
+    if (cmd->in_file)
+    {
+        cmd->in_fd = open(cmd->in_file, O_RDONLY);
+        if (cmd->in_fd == -1)
+        {
+            print_error_msg("open", cmd->in_file);
+            return (FAILED);
+        }
+        if (dup2(cmd->in_fd, STDIN_FILENO) == -1)
+        {
+            print_error_msg("dup2", NULL);
+            close(cmd->in_fd);
+            return (FAILED);
+        }
+        close(cmd->in_fd);
+    }
+    return (SUCCESS);
+}
+
+static int handle_output_redirect(t_cmd *cmd)
+{
+    if (cmd->out_file)
+    {
+        int flags = O_WRONLY | O_CREAT | (cmd->append_mode ? O_APPEND : O_TRUNC);
+        cmd->out_fd = open(cmd->out_file, flags, 0644);
+        if (cmd->out_fd == -1)
+        {
+            print_error_msg("open", cmd->out_file);
+            return (FAILED);
+        }
+        if (dup2(cmd->out_fd, STDOUT_FILENO) == -1)
+        {
+            print_error_msg("dup2", NULL);
+            close(cmd->out_fd);
+            return (FAILED);
+        }
+        close(cmd->out_fd);
+    }
+    return (SUCCESS);
+}
+
+// Função para executar builtins no processo pai
+int execute_builtin_parent(t_cmd *cmd, t_env **env)
 {
     if (ft_strcmp(cmd->args[0], "exit") == 0)
         return (ft_exit(cmd));
@@ -27,127 +118,126 @@ int execute_builtin(t_cmd *cmd, t_env **env)
     return (0);
 }
 
-void close_fds(t_cmd *cmd)
+// Função para executar comandos externos
+static int execute_external(t_cmd *cmd, t_env *env)
 {
-    if (cmd->in_fd != STDIN_FILENO)
-        close(cmd->in_fd);
-    if (cmd->out_fd != STDOUT_FILENO)
-        close(cmd->out_fd);
-}
+    char *path = get_cmd_path(cmd->args[0], env);
+    char **env_array = env_to_array(env);
+    //int status;
 
-char *get_cmd_path(char *cmd, t_env *env)
-{
-    char *path;
-    char *path_env;
-    char **paths;
-    int i;
-    struct stat st;
-
-    if (!cmd || !*cmd)
-        return (NULL);
-    
-    // Se o comando já tem um path absoluto ou relativo
-    if (ft_strchr(cmd, '/'))
+    if (!path)
     {
-        if (stat(cmd, &st) == 0 && (st.st_mode & S_IXUSR))
-            return (ft_strdup(cmd));
-        return (NULL);
+        print_error_msg(cmd->args[0], "command not found");
+        ft_free_array(env_array);
+        return (CMD_NOT_FOUND);
     }
-    
-    path_env = get_env_value(env, "PATH");
-    if (!path_env)
-        return (NULL);
-    
-    paths = ft_split(path_env, ':');
-    if (!paths)
-        return (NULL);
-    
-    i = -1;
-    while (paths[++i])
+
+    if (execve(path, cmd->args, env_array) == -1)
     {
-        path = ft_strjoin(paths[i], "/");
-        path = ft_strjoin_free(path, cmd);
-        if (stat(path, &st) == 0 && (st.st_mode & S_IXUSR))
-        {
-            ft_free_array(paths);
-            return (path);
-        }
+        print_error_msg("execve", cmd->args[0]);
         free(path);
+        ft_free_array(env_array);
+        return (NOT_EXECUTABLE);
     }
-    
-    ft_free_array(paths);
-    return (NULL);
+    free(path);
+    ft_free_array(env_array);
+    return (EXIT_SUCCESS);
 }
 
-int handle_redirections(t_cmd *cmd)
-{
-    // Handle input redirection
-    if (cmd->in_redirect)
-    {
-        if (cmd->heredoc_number > 0)
-            redirect_heredoc(cmd->in_redirect, cmd->heredoc_number);
-        else if (redirect_input(cmd->in_redirect) == FAILED)
-            return (1);
-    }
-
-    // Handle output redirection
-    if (cmd->out_redirect)
-    {
-        if (redirect_output(cmd->out_redirect) == FAILED)
-            return (1);
-    }
-
-    return (0);
-}
-
-int is_builtin(char *cmd)
-{
-    if (!cmd)
-        return (0);
-    return (ft_strcmp(cmd, "exit") == 0 ||
-            ft_strcmp(cmd, "echo") == 0 ||
-            ft_strcmp(cmd, "cd") == 0 ||
-            ft_strcmp(cmd, "pwd") == 0 ||
-            ft_strcmp(cmd, "export") == 0 ||
-            ft_strcmp(cmd, "unset") == 0 ||
-            ft_strcmp(cmd, "env") == 0);
-}
-
+// Função para executar um único comando
 int execute_command(t_cmd *cmd, t_env **env)
 {
-    int status;
     pid_t pid;
-    char *path;
+    int status;
 
     if (!cmd || !cmd->args || !cmd->args[0])
-        return (1);
+        return (EXIT_FAILURE);
 
-    // Handle redirections first
-    if (setup_redirections(cmd) != 0)
-        return (1);
+    // Handle redirections
+    if (handle_input_redirect(cmd) != SUCCESS || handle_output_redirect(cmd) != SUCCESS)
+        return (EXIT_FAILURE);
 
     if (is_builtin(cmd->args[0]))
-        return (execute_builtin(cmd, env));
+        return (execute_builtin_parent(cmd, env));
 
     pid = fork();
-    if (pid == 0) {
+    if (pid == 0)
+    {
         // Child process
-        path = get_cmd_path(cmd->args[0], *env);
-        if (!path) {
-            print_error(cmd->args[0], NULL, "command not found");
-            exit(127);
-        }
-
-        char **env_array = env_to_array(*env);
-        execve(path, cmd->args, env_array);
-        print_error("execve", cmd->args[0], strerror(errno));
-        exit(126);
-    } else {
+        define_execute_signals(0); // Set signals for child
+        status = execute_external(cmd, *env);
+        exit(status);
+    }
+    else if (pid > 0)
+    {
         // Parent process
+        define_execute_signals(pid); // Set signals for parent
         waitpid(pid, &status, 0);
-        cleanup_redirections(cmd);
         if (WIFEXITED(status))
             return (WEXITSTATUS(status));
-        return (1);
+        return (handle_signal_status(status, TRUE));
+    }
+    else
+    {
+        print_error_msg("fork", NULL);
+        return (EXIT_FAILURE);
     }
 }
+
+// Função para executar pipeline de comandos
+int execute_pipeline(t_cmd *cmds, t_env **env)
+{
+    int pipe_fds[2] = {-1, -1};
+    int prev_pipe_in = -1;
+    pid_t pid;
+    int status = 0;
+    t_cmd *current = cmds;
+
+    while (current)
+    {
+        if (current->next && pipe(pipe_fds) == -1)
+        {
+            print_error_msg("pipe", NULL);
+            return (EXIT_FAILURE);
+        }
+
+        pid = fork();
+        if (pid == 0)
+        {
+            // Child process
+            define_execute_signals(0);
+            setup_pipe_redirections(prev_pipe_in, pipe_fds, current->next != NULL);
+            
+            if (handle_input_redirect(current) != SUCCESS || 
+                handle_output_redirect(current) != SUCCESS)
+                exit(EXIT_FAILURE);
+
+            if (is_builtin(current->args[0]))
+                exit(execute_builtin_parent(current, env));
+            else
+                exit(execute_external(current, *env));
+        }
+        else if (pid < 0)
+        {
+            print_error_msg("fork", NULL);
+            return (EXIT_FAILURE);
+        }
+
+        // Parent continues
+        close_pipe_ends(prev_pipe_in, pipe_fds, current->next != NULL);
+        prev_pipe_in = pipe_fds[0];
+        current = current->next;
+    }
+
+    // Wait for all children
+    while (wait(&status) > 0)
+    {
+        if (WIFEXITED(status))
+            set_exit_status(WEXITSTATUS(status));
+        else
+            set_exit_status(handle_signal_status(status, TRUE));
+    }
+
+    return (get_exit_status());
+}
+

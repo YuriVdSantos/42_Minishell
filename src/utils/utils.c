@@ -334,3 +334,117 @@ void free_cmds(t_cmd *cmds)
         free(tmp);
     }
 }
+
+void	print_error_msg(char *command, char *msg)
+{
+	ft_putstr_fd("minishell: ", STDERR_FILENO);
+	ft_putstr_fd(command, STDERR_FILENO);
+	ft_putstr_fd(": ", STDERR_FILENO);
+	ft_putstr_fd(msg, STDERR_FILENO);
+	ft_putstr_fd("\n", STDERR_FILENO);
+}
+
+void	move_one_forward(char *str)
+{
+	ft_memmove(str, str + 1, ft_strlen(str + 1) + 1);
+}
+
+int is_builtin(char *cmd)
+{
+    if (!cmd)
+        return (FALSE);
+    
+    return (ft_strcmp(cmd, "echo") == 0 ||
+           ft_strcmp(cmd, "cd") == 0 ||
+           ft_strcmp(cmd, "pwd") == 0 ||
+           ft_strcmp(cmd, "export") == 0 ||
+           ft_strcmp(cmd, "unset") == 0 ||
+           ft_strcmp(cmd, "env") == 0 ||
+           ft_strcmp(cmd, "exit") == 0);
+}
+
+char *get_cmd_path(char *cmd, t_env *env)
+{
+    char    *path;
+    char    *path_env;
+    char    **paths;
+    int     i;
+    struct stat st;
+
+    if (!cmd || !*cmd)
+        return (NULL);
+    
+    // Se o comando já tem um path absoluto ou relativo
+    if (ft_strchr(cmd, '/'))
+    {
+        if (stat(cmd, &st) == 0 && S_ISREG(st.st_mode) && (st.st_mode & S_IXUSR))
+            return (ft_strdup(cmd));
+        return (NULL);
+    }
+    
+    path_env = get_env_value(env, "PATH");
+    if (!path_env)
+        return (NULL);
+    
+    paths = ft_split(path_env, ':');
+    if (!paths)
+        return (NULL);
+    
+    i = -1;
+    while (paths[++i])
+    {
+        path = ft_strjoin(paths[i], "/");
+        path = ft_strjoin_free(path, ft_strdup(cmd));
+        if (stat(path, &st) == 0 && S_ISREG(st.st_mode) && (st.st_mode & S_IXUSR))
+        {
+            ft_free_array(paths);
+            return (path);
+        }
+        free(path);
+    }
+    
+    ft_free_array(paths);
+    return (NULL);
+}
+
+int handle_redirections(t_cmd *cmd)
+{
+    // Handle input redirection
+    if (cmd->in_file)
+    {
+        cmd->in_fd = open(cmd->in_file, O_RDONLY);
+        if (cmd->in_fd == -1)
+        {
+            print_error_msg("open", cmd->in_file);
+            return (FAILED);
+        }
+        if (dup2(cmd->in_fd, STDIN_FILENO) == -1)
+        {
+            print_error_msg("dup2", NULL);
+            close(cmd->in_fd);
+            return (FAILED);
+        }
+        close(cmd->in_fd);
+    }
+
+    // Handle output redirection
+    if (cmd->out_file)
+    {
+        int flags = O_WRONLY | O_CREAT | (cmd->append_mode ? O_APPEND : O_TRUNC);
+        cmd->out_fd = open(cmd->out_file, flags, 0644);
+        if (cmd->out_fd == -1)
+        {
+            print_error_msg("open", cmd->out_file);
+            return (FAILED);
+        }
+        if (dup2(cmd->out_fd, STDOUT_FILENO) == -1)
+        {
+            print_error_msg("dup2", NULL);
+            close(cmd->out_fd);
+            return (FAILED);
+        }
+        close(cmd->out_fd);
+    }
+
+    return (SUCCESS);
+}

@@ -1,25 +1,29 @@
 #include "minishell.h"
 
-int	redirect_input(char *command)
+int redirect_input(char *command) 
 {
-	char	*input_redirect;
-	char	*file_name;
-	int		fd;
+    char *redirect_pos;
+    char *filename;
+    int input_fd;
 
-	input_redirect = get_redirect_position(command, '<');
-	if (!input_redirect)
-		return (SUCCESS);
-	file_name = get_label_name(input_redirect);
-	if (!file_name)
-		return (FAILED);
-	fd = open(file_name, O_RDONLY);
-	if (fd == -1)
-	{
-		print_error("open", file_name, strerror(errno));
-		free(file_name);
-		return (FAILED);
-	}
-	redirect_fd(fd, STDIN_FILENO);
-	free(file_name);
-	return (SUCCESS);
+    redirect_pos = get_redirect_position(command, INPUT_REDIRECT_CHAR);
+    if (!redirect_pos) {
+        return SUCCESS;
+    }
+
+    filename = get_label_name(redirect_pos);
+    if (!filename) {
+        return FAILED;
+    }
+
+    input_fd = open(filename, FILE_OPEN_MODE, FILE_FLAGS);
+    if (input_fd == -1) {
+        print_error_msg("open", filename);
+        free(filename);
+        return FAILED;
+    }
+
+    redirect_fd(input_fd, STDIN_FILENO);
+    free(filename);
+    return SUCCESS;
 }

@@ -1,14 +1,14 @@
 #include "minishell.h"
 
-static char	*tmp_filename(int heredoc_number)
+static char	*generate_heredoc_filename(int heredoc_number)
 {
-	char	filename[30];
+	char	filename[MAX_FILENAME_LENGTH];
 	char	*number_str;
 
-	ft_bzero(filename, 30);
+	ft_bzero(filename, MAX_FILENAME_LENGTH);
 	number_str = ft_itoa(heredoc_number);
-	ft_strlcat(filename, "/tmp/heredoc", 30);
-	ft_strlcat(filename, number_str, 30);
+	ft_strlcat(filename, HEREDOC_FILENAME_PREFIX, MAX_FILENAME_LENGTH);
+	ft_strlcat(filename, number_str, MAX_FILENAME_LENGTH);
 	free(number_str);
 	return (ft_strdup(filename));
 }
@@ -17,21 +17,20 @@ void	redirect_heredoc(char *command, int heredoc_number)
 {
 	char	*filename;
 	int		tmp_file_fd;
-	char	*heredoc_position;
 
-	filename = tmp_filename(heredoc_number);
+	filename = generate_heredoc_filename(heredoc_number);
 	if (!filename)
-		return ;
+		return;
+		
 	tmp_file_fd = open(filename, O_RDONLY);
+	free(filename);
+	
 	if (tmp_file_fd == -1)
 	{
-		print_error("open", filename, strerror(errno));
-		free(filename);
-		return ;
+		print_error_msg("open", filename);
+		return;
 	}
-	free(filename);
+	
 	redirect_fd(tmp_file_fd, STDIN_FILENO);
-	heredoc_position = get_redirect_position(command, heredoc_number);
-	if (heredoc_position)
-		heredoc_position++;
+	move_one_forward(get_redirect_position(command, heredoc_number));
 }
