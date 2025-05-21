@@ -1,23 +1,15 @@
-
-
 #include "minishell.h"
 
 int	is_invalid_token(char c)
 {
-	if (c == '|')
-		return (TRUE);
-	if (c == '>')
-		return (TRUE);
-	if (c == '<')
-		return (TRUE);
-	return (FALSE);
+	return (c == '|' || c == '>' || c == '<');
 }
 
 int	unexpected_token(char *input)
 {
 	if (input[0] == '<' && input[1] == '<')
 		return (syntax_error("<<"));
-	else if (input[0] == '>' && input[1] == '>')
+	if (input[0] == '>' && input[1] == '>')
 		return (syntax_error(">>"));
 	input[1] = '\0';
 	return (syntax_error(input));
@@ -39,18 +31,19 @@ char	*get_next_pipe(char *str)
 		if (*str == '\'')
 		{
 			str++;
-			while (*str != '\'')
+			while (*str && *str != '\'')
 				str++;
 		}
 		if (*str == '"')
 		{
 			str++;
-			while (*str != '"')
+			while (*str && *str != '"')
 				str++;
 		}
 		if (*str == '|')
 			return (str);
-		str++;
+		if (*str)
+			str++;
 	}
 	return (NULL);
 }

@@ -1,9 +1,9 @@
 NAME	=	minishell
-# CFLAGS	=	-Wall -Wextra -Werror -g
-CFLAGS	=	-Wall -Wextra -Werror -g -I./includes -I./libft/includes -I/opt/homebrew/opt/readline/include
+CFLAGS	=	-Wall -Wextra -Werror -g
+# CFLAGS	=	-Wall -Wextra -Werror -g -I./includes -I./libft/includes -I/opt/homebrew/opt/readline/include
 LDLIBS	=	-lreadline -lft
-# LDFLAGS	+= 	-L./libft
-LDFLAGS	=	-L./libft -L/opt/homebrew/opt/readline/lib
+LDFLAGS	+= 	-L./libft
+# LDFLAGS	=	-L./libft -L/opt/homebrew/opt/readline/lib
 OBJ_DIR	=	obj
 OBJS	=	$(SRCS:%.c=$(OBJ_DIR)/%.o)
 SRCS	=	$(MAIN) $(MINIENV) $(BUILTINS) $(EXECUTES) $(REDIRECTS) $(UTILS) \

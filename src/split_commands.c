@@ -1,5 +1,3 @@
-
-
 #include "minishell.h"
 
 static void	replace_pipes(char *str, char delimeter);
@@ -20,8 +18,9 @@ static void	replace_pipes(char *str, char delimeter)
 {
 	while (*str && *str != delimeter)
 		str++;
-	if (*str)
-		str++;
+	if (!*str)
+		return;
+	str++;
 	while (*str && *str != delimeter)
 	{
 		if (*str == '|')
@@ -49,5 +48,4 @@ static void	restore_pipes(char **exec_args)
 		}
 		exec_args++;
 	}
-	return ;
 }
