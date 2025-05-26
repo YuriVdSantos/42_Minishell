@@ -3,99 +3,83 @@
 /*                                                        :::      ::::::::   */
 /*   ft_split.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/08/13 15:14:17 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/08/20 09:47:06 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2024/10/08 20:54:26 by jhualves          #+#    #+#             */
+/*   Updated: 2024/11/05 17:37:23 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static int		count_substrings(char const *s, char c);
-static size_t	add_string_to_arr(char **arr, int i, char *s, char c);
-void			free_previous_allocations(char **arr, int i);
-
-// Splits a string into smaller string, given a 'c' separator
-// Allocates memory for string pointers
-// Travels until it find a substring
-// Allocates memory for the substring
-// Adds a NULL element to cap off the array
-char	**ft_split(char const *s, char c)
+static void	mtz_free(char **mtz, int i)
 {
-	char	**arr;
-	size_t	substring_size;
+	while (i >= 0)
+	{
+		free(mtz[i]);
+		i--;
+	}
+	free(mtz);
+}
+
+static int	ft_count_split(const char *str, char c)
+{
+	int	count;
+
+	count = 0;
+	while (*str != '\0')
+	{
+		while (*str == c)
+			str++;
+		if (*str != c && *str != '\0')
+			count++;
+		while (*str != c && *str != '\0')
+			str++;
+	}
+	return (count);
+}
+
+static char	**ft_fill(char **mtz, char *str, char c)
+{
+	size_t	count;
 	int		i;
 
-	if (!s)
-		return (NULL);
-	arr = malloc(sizeof(char *) * (count_substrings(s, c) + 1));
-	if (!arr)
-		return (NULL);
+	count = 0;
 	i = 0;
-	while (*s)
+	while (str[count])
 	{
-		if (*s == c)
-			s++;
-		else
+		while (*str == c && *str != '\0')
+			str++;
+		while (str[count] != c && str[count] != '\0')
+			count++;
+		if (count > 0)
 		{
-			substring_size = add_string_to_arr(arr, i, (char *)s, c);
-			if (!substring_size)
+			mtz[i] = ft_substr(str, 0, count);
+			if (mtz[i] == NULL)
+			{
+				mtz_free(mtz, i);
 				return (NULL);
-			s += substring_size;
+			}
 			i++;
 		}
+		str = str + count;
+		count = 0;
 	}
-	arr[i] = NULL;
-	return (arr);
+	return (mtz);
 }
 
-size_t	add_string_to_arr(char **arr, int i, char *s, char c)
+char	**ft_split(char const *s, char c)
 {
-	size_t	len;
-
-	len = 0;
-	while (s[len] && s[len] != c)
-		len++;
-	arr[i] = malloc(sizeof(char) * (len + 1));
-	if (!arr[i])
-	{
-		free_previous_allocations(arr, i);
-		return (0);
-	}
-	if (!(ft_strlcpy(arr[i], s, len + 1)))
-		return (0);
-	return (len);
-}
-
-int	count_substrings(char const *s, char c)
-{
-	int	i;
+	char	**mtz;
+	int		count;
 
 	if (!s)
-		return (0);
-	i = 0;
-	while (*s)
-	{
-		if (*s == c)
-			s++;
-		else
-		{
-			i++;
-			while (*s && *s != c)
-				s++;
-		}
-	}
-	return (i);
-}
-
-void	free_previous_allocations(char **arr, int i)
-{
-	while (i--)
-	{
-		free(arr[i]);
-		arr[i] = NULL;
-	}
-	free(arr);
-	arr = NULL;
+		return (NULL);
+	count = ft_count_split(s, c);
+	mtz = malloc((count + 1) * sizeof(char *));
+	if (mtz == NULL)
+		return (NULL);
+	mtz = ft_fill(mtz, (char *)s, c);
+	mtz[count] = NULL;
+	return (mtz);
 }

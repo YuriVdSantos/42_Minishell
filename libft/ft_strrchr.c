@@ -3,33 +3,29 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strrchr.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalex-ku <lalex-ku@42sp.org.br>            +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/07/31 14:01:45 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2022/06/24 18:57:02 by lalex-ku         ###   ########.fr       */
+/*   Created: 2024/10/08 20:55:44 by jhualves          #+#    #+#             */
+/*   Updated: 2024/11/04 20:33:57 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-// The strchr() function locates the first occur-
-// rence of c (converted to a char) in the string
-// pointed to by s.
-// Return a pointer to the located character, or NULL if the
-// character does not appear in the string
+
 char	*ft_strrchr(const char *s, int c)
 {
-	int		i;
-	char	*location;
+	const char		*temp;
+	unsigned char	uc;
 
-	i = 0;
-	location = 0;
-	while (s[i])
+	uc = (unsigned char)c;
+	temp = NULL;
+	while (*s)
 	{
-		if (s[i] == (unsigned char)c)
-			location = ((char *)s + i);
-		i++;
+		if ((unsigned char)*s == uc)
+			temp = s;
+		s++;
 	}
-	if (s[i] == c)
-		return ((char *)s + i);
-	return (location);
+	if (uc == '\0')
+		return ((char *)s);
+	return ((char *)temp);
 }

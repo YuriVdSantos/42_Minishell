@@ -1,34 +1,40 @@
-
-
 #include "minishell.h"
 
 static void	save_original_fds(int original_fds[2])
 {
-	original_fds[0] = dup(STDIN_FILENO);
-	original_fds[1] = dup(STDOUT_FILENO);
+    if ((original_fds[0] = dup(STDIN_FILENO)) == -1 || 
+        (original_fds[1] = dup(STDOUT_FILENO)) == -1)
+    {
+        perror("dup");
+        exit(EXIT_FAILURE);
+    }
 }
 
 static void	handle_redirects(char *command, char **commands, t_env **minienv)
 {
-	char	redirect;
+    char	redirect;
 
-	redirect = get_next_redirect(command);
-	while (redirect)
+    while ((redirect = get_next_redirect(command)))
 	{
-		if (redirect == '<')
-		{
-			if (redirect_input(command) == FAILED)
-				quit_child(commands, minienv);
-		}
-		if (redirect == '>')
-		{
-			if (redirect_output(command) == FAILED)
-				quit_child(commands, minienv);
-		}
-		if (redirect < 0)
-			redirect_heredoc(command, redirect);
-		redirect = get_next_redirect(command);
-	}
+        if (redirect == '<')
+        {
+            if (redirect_input(command) == FAILED)
+            {
+                free_array(commands);
+                free_minienv(minienv);
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (redirect == '>')
+        {
+            if (redirect_output(command) == FAILED)
+            {
+                free_array(commands);
+                free_minienv(minienv);
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
 }
 
 static void	execute_forked_command(char *command, char **commands,

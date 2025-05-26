@@ -1,31 +1,33 @@
-
-
 #include "minishell.h"
 
 int	*init_children_pid(char **commands)
 {
-	int		*children_pid;
-	size_t	size;
+    int		*children_pid;
+    size_t	num_commands;
 
-	size = sizeof(int) * (arr_len(commands) + 1);
-	children_pid = malloc(size);
-	if (!children_pid)
-		return (NULL);
-	ft_bzero(children_pid, size);
-	return (children_pid);
+    num_commands = arr_len(commands);
+    children_pid = ft_calloc(num_commands + 1, sizeof(int));
+    if (!children_pid)
+        return (NULL);
+    return (children_pid);
 }
 
 void	clean_after_execute(int *children_pid)
 {
-	close_extra_fds();
-	free(children_pid);
+    if (children_pid)
+    {
+        close_extra_fds();
+        free(children_pid);
+    }
 }
 
 void	quit_child(char **commands, t_env **minienv)
 {
-	rl_clear_history();
-	free_minienv(minienv);
-	free_array(commands);
-	close_all_fds();
-	exit(EXIT_FAILURE);
+    if (commands)
+        free_array(commands);
+    if (minienv)
+        free_minienv(minienv);
+    close_all_fds();
+    rl_clear_history();
+    exit(EXIT_FAILURE);
 }

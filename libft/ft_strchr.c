@@ -3,38 +3,27 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strchr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/07/31 14:01:45 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/08/13 18:57:20 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2024/10/08 20:55:22 by jhualves          #+#    #+#             */
+/*   Updated: 2024/11/04 20:19:55 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-/**
- * @brief Locate character in string
- * @details
- * If the character searched for is \0,
- * it will return the location of the end of the string
- * Locates the first occurance of a character `c` on a given string 's'
- * @see strrchr
- * @param s String ( expects a null-terminated )
- * @param c Char to find on string
- * @return String starting from char c
- */
 char	*ft_strchr(const char *s, int c)
 {
-	int	i;
+	unsigned char	uc;
 
-	i = 0;
-	while (s[i])
+	uc = (unsigned char)c;
+	while (*s != '\0')
 	{
-		if (s[i] == (unsigned char)c)
-			return ((char *)s + i);
-		i++;
+		if ((unsigned char)*s == uc)
+			return ((char *)s);
+		s++;
 	}
-	if (s[i] == c)
-		return ((char *)s + i);
-	return (0);
+	if (uc == '\0')
+		return ((char *)s);
+	return (NULL);
 }

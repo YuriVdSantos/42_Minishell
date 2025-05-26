@@ -3,60 +3,58 @@
 /*                                                        :::      ::::::::   */
 /*   ft_itoa.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/08/13 14:24:06 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/08/14 22:36:10 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2024/10/08 20:54:13 by jhualves          #+#    #+#             */
+/*   Updated: 2025/01/23 14:59:40 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static int	digits_in_number(int n);
-static int	ft_power(int n, int power);
-
-// Allocates (with malloc(3)) and returns a string
-// representing the integer received as an argument.
-// Negative numbers must be handled.
-char	*ft_itoa(int n)
+static int	count_digit(long n)
 {
+	int	count;
+
+	count = 0;
+	if (n <= 0)
+		count = 1;
+	while (n != 0)
+	{
+		n = n / 10;
+		count++;
+	}
+	return (count);
+}
+
+static char	*convert_to_str(char *str, long n, int len)
+{
+	str[len] = '\0';
+	if (n == 0)
+		str[0] = '0';
+	if (n < 0)
+	{
+		str[0] = '-';
+		n = -n;
+	}
+	while (n != 0)
+	{
+		str[--len] = (n % 10) + '0';
+		n = n / 10;
+	}
+	return (str);
+}
+
+char	*ft_itoa(long n)
+{
+	int		len;
 	char	*str;
-	char	*str_start;
-	int		digits;
 
 	if (n == -2147483648)
 		return (ft_strdup("-2147483648"));
-	digits = digits_in_number(n);
-	str = malloc(sizeof(char) * (digits + 1));
+	len = count_digit(n);
+	str = (char *)malloc(sizeof(char) * (len + 1));
 	if (!str)
 		return (NULL);
-	str_start = str;
-	if (n < 0 && digits--)
-	{
-		*str++ = '-';
-		n *= -1;
-	}
-	while (n >= 0 && digits--)
-	{
-		*str++ = '0' + (n / ft_power(10, digits));
-		n = n % ft_power(10, digits);
-	}
-	*str = '\0';
-	return (str_start);
-}
-
-static int	digits_in_number(int n)
-{
-	if (n < 0 && n / 10 == 0)
-		return (2);
-	if (n / 10 == 0)
-		return (1);
-	return (1 + digits_in_number(n / 10));
-}
-
-static int	ft_power(int n, int power)
-{
-	if (power == 0)
-		return (1);
-	return (n * ft_power(n, power - 1));
+	return (convert_to_str(str, n, len));
 }

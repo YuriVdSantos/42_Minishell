@@ -3,26 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   ft_calloc.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/08/13 11:02:56 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/08/13 11:02:58 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2024/10/25 16:12:39 by jhualves          #+#    #+#             */
+/*   Updated: 2024/11/07 23:00:22 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-// The calloc() function contiguously allocates enough space for count
-// objects that are size bytes of memory each and returns a pointer to the
-// allocated memory.  The allocated memory is filled with bytes of value
-// zero.
-void	*ft_calloc(size_t count, size_t size)
+void	*ft_calloc(size_t nmemb, size_t size)
 {
+	size_t	total_size;
 	void	*ptr;
 
-	ptr = malloc(count * size);
-	if (!ptr)
+	if (nmemb == 0 || size == 0)
+		return (malloc(0));
+	total_size = nmemb * size;
+	if (total_size / nmemb != size)
 		return (NULL);
-	ft_bzero(ptr, count * size);
+	ptr = malloc(total_size);
+	if (ptr == NULL)
+		return (NULL);
+	ft_memset(ptr, 0, total_size);
 	return (ptr);
 }

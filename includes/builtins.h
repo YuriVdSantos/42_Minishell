@@ -14,7 +14,10 @@ int	unset(char **args, t_env **minienv);
 int	builtin_exit(char **args, t_env **minienv);
 
 // utils
-int	is_varname(char c);
-int	is_valid_varname(char *name);
+int		is_varname(char c);
+int		is_valid_varname(char *name);
+int		cd_error(void);
+int		is_only_n(const char *str);
+void	cleanup(char **args, t_env **minienv);
 
 #endif

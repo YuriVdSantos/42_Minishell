@@ -1,58 +1,54 @@
-
-
 #include "minishell.h"
 
-static char	*find_exit_status_position(char *input)
+static char	*locate_exit_status(char *input)
 {
-	while (input && *input)
-	{
-		if (*input == '\'')
-		{
-			input++;
-			while (*input && *input != '\'')
-				input++;
-		}
-		if (*input == '\"')
-		{
-			input++;
-			while (*input && *input != '\"')
-			{
-				if (*input == '$' && input[1] == '?')
-					return (input);
-				input++;
-			}
-		}
-		if (*input == '$' && input[1] == '?')
-			return (input);
-		input++;
-	}
-	return (NULL);
+    while (input && *input)
+    {
+        if (*input == '\'')
+        {
+            input++;
+            while (*input && *input != '\'')
+                input++;
+        }
+        else if (*input == '\"')
+        {
+            input++;
+            while (*input && *input != '\"')
+            {
+                if (*input == '$' && input[1] == '?')
+                    return (input);
+                input++;
+            }
+        }
+        else if (*input == '$' && input[1] == '?')
+            return (input);
+        input++;
+    }
+    return (NULL);
 }
 
-static void	update_input(char **input, char *exit_code, char *second_part)
+static void	replace_input(char **input, const char *exit_code, const char *remaining_part)
 {
-	char	*first_part;
-	char	*updated_input;
+    char	*temp_part;
+    char	*new_input;
 
-	first_part = ft_strjoin(*input, exit_code);
-	updated_input = ft_strjoin(first_part, second_part);
-	free(*input);
-	free(first_part);
-	*input = updated_input;
+    temp_part = ft_strjoin(*input, exit_code);
+    new_input = ft_strjoin(temp_part, remaining_part);
+    free(*input);
+    free(temp_part);
+    *input = new_input;
 }
 
 void	expand_exit_status(char **input, int exit_status)
 {
-	char	*exit_status_position;
-	char	*exit_status_str;
+    char	*exit_status_pos;
+    char	*exit_status_str;
 
-	exit_status_position = find_exit_status_position(*input);
-	if (exit_status_position)
-	{
-		*exit_status_position = '\0';
-		exit_status_str = ft_itoa(exit_status);
-		update_input(input, exit_status_str, (exit_status_position + 2));
-		free(exit_status_str);
-		expand_exit_status(input, exit_status);
-	}
+    while ((exit_status_pos = locate_exit_status(*input)))
+    {
+        *exit_status_pos = '\0';
+        exit_status_str = ft_itoa(exit_status);
+        replace_input(input, exit_status_str, exit_status_pos + 2);
+        free(exit_status_str);
+    }
 }

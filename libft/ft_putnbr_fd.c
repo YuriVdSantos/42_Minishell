@@ -3,51 +3,36 @@
 /*                                                        :::      ::::::::   */
 /*   ft_putnbr_fd.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/08/13 15:04:01 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/08/13 18:57:18 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2024/10/08 20:54:21 by jhualves          #+#    #+#             */
+/*   Updated: 2024/11/08 21:53:18 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static int	ft_power(int n, int power);
-static int	ft_digits_in_number(int n);
-
-// Outputs the integer ’n’ to the given file descriptor 'fd'.
 void	ft_putnbr_fd(int n, int fd)
 {
-	long int	number;
-	int			power;
-	char		c;
+	char	c;
 
-	number = n;
+	if (n == -2147483648)
+	{
+		write(fd, "-2147483648", 11);
+		return ;
+	}
+	if (n == 0)
+	{
+		write(fd, "0", 1);
+		return ;
+	}
 	if (n < 0)
 	{
-		ft_putchar_fd('-', fd);
-		number = -number;
+		write(fd, "-", 1);
+		n = -n;
 	}
-	power = ft_digits_in_number(number);
-	while (number >= 0 && power--)
-	{
-		c = '0' + (number / ft_power(10, power));
-		ft_putchar_fd(c, fd);
-		number = number % ft_power(10, power);
-	}
-	return ;
-}
-
-static int	ft_power(int n, int power)
-{
-	if (power == 0)
-		return (1);
-	return (n * ft_power(n, power - 1));
-}
-
-static int	ft_digits_in_number(int n)
-{
-	if (n / 10 == 0)
-		return (1);
-	return (1 + ft_digits_in_number(n / 10));
+	if (n >= 10)
+		ft_putnbr_fd(n / 10, fd);
+	c = (n % 10) + '0';
+	write(fd, &c, 1);
 }

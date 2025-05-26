@@ -3,22 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   ft_bzero.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/07/30 15:41:43 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/07/30 19:20:28 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2024/10/08 20:54:10 by jhualves          #+#    #+#             */
+/*   Updated: 2025/05/20 22:51:08 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-/**
- * @brief Adds char 0 (\\n) to a string
- *
- * @param p Pointer to the string
- * @param n Amount of zeros to add
- */
-void	ft_bzero(void *p, size_t n)
+void	ft_bzero(void *s, size_t n)
 {
-	ft_memset(p, 0, n);
+	size_t	i;
+
+	i = 0;
+	while (i < n)
+	{
+		((unsigned char *)s)[i] = '\0';
+		i++;
+	}
 }

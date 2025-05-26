@@ -1,27 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_lstiter.c                                       :+:      :+:    :+:   */
+/*   ft_strcmp.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/08/13 15:05:41 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/08/13 15:05:42 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2025/02/12 15:10:36 by jhualves          #+#    #+#             */
+/*   Updated: 2025/04/28 22:56:56 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-// Iterates the list ’lst’ and applies the function
-// ’f’ to the content of each element.
-void	ft_lstiter(t_list *lst, void (*f)(void *))
+int	ft_strcmp(const char *s1, const char *s2)
 {
-	if (!lst)
-		return ;
-	while (lst)
+	while (*s1 && (*s1 == *s2))
 	{
-		f(lst->content);
-		lst = lst->next;
+		s1++;
+		s2++;
 	}
-	return ;
+	if (*(unsigned char *)s1 - *(unsigned char *)s2 == 0)
+		return (1);
+	else
+		return (0);
 }

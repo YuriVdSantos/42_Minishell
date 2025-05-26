@@ -3,26 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strlen.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/07/30 15:41:43 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/08/13 11:19:49 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2024/10/08 20:55:37 by jhualves          #+#    #+#             */
+/*   Updated: 2024/11/04 15:02:04 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-/**
- @brief Returns the length of the string without the \0 at the end
 
- @param str
- @return size_t
- */
-size_t	ft_strlen(const char *str)
+size_t	ft_strlen(const char *s)
 {
 	size_t	i;
 
 	i = 0;
-	while (str[i])
+	while (s[i] != '\0')
 		i++;
 	return (i);
 }

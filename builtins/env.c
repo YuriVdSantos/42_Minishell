@@ -1,19 +1,12 @@
-
 #include "minishell.h"
 
 int	env(t_env *minienv)
 {
-	t_env	*aux;
-
-	aux = minienv;
-	while (aux)
-	{
-		if (ft_strchr(aux->key_pair, '='))
-		{
-			ft_putstr_fd(aux->key_pair, STDOUT_FILENO);
-			ft_putstr_fd("\n", STDOUT_FILENO);
-		}
-		aux = aux->next;
-	}
-	return (0);
+    while (minienv)
+    {
+        if (ft_strchr(minienv->key_pair, '='))
+            ft_printf("%s\n", minienv->key_pair);
+        minienv = minienv->next;
+    }
+    return (EXIT_SUCCESS);
 }

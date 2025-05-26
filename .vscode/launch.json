@@ -2,12 +2,25 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug Minishell",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/minishell",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "build",
+      "stopAtEntry": false,
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
+    {
       "name": "C/C++ Runner: Debug Session",
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/yurivieiradossantos/minishell/src/syntax",
-      "program": "/Users/yurivieiradossantos/minishell/src/syntax/build/Debug/outDebug"
+      "cwd": "/Users/yurivieiradossantos/minishell/src",
+      "program": "/Users/yurivieiradossantos/minishell/minishell"
     }
   ]
 }

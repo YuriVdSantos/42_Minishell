@@ -3,37 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   ft_memcmp.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/07/31 19:51:40 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/08/13 14:48:42 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2024/10/08 20:55:12 by jhualves          #+#    #+#             */
+/*   Updated: 2024/10/23 22:08:54 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-/**
- * @brief Compares two string and returns the difference between
- * the first different char
- * @details How much bigger s1 is than s2
- * @param s1
- * @param s2
- * @param n Amount of chars to compare
- * @return int -> 1 if s1 is bigger, -1 if s2 is bigger, 0 if they are the same
- */
 int	ft_memcmp(const void *s1, const void *s2, size_t n)
 {
-	const unsigned char	*s1_chars;
-	const unsigned char	*s2_chars;
+	const unsigned char	*ptr1;
+	const unsigned char	*ptr2;
 
-	s1_chars = s1;
-	s2_chars = s2;
-	while (n)
+	ptr1 = s1;
+	ptr2 = s2;
+	while (n > 0)
 	{
-		if (*s1_chars != *s2_chars)
-			return ((unsigned char)*s1_chars - (unsigned char)*s2_chars);
-		s1_chars++;
-		s2_chars++;
+		if (*ptr1 != *ptr2)
+			return (*ptr1 - *ptr2);
+		ptr1++;
+		ptr2++;
 		n--;
 	}
 	return (0);

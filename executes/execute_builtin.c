@@ -1,15 +1,19 @@
-
 #include "minishell.h"
+
+void	cleanup(char **args, t_env **minienv)
+{
+    free_array(args);
+    free_minienv(minienv);
+    rl_clear_history();
+}
 
 int	execute_forked_builtin(char **args, t_env **minienv)
 {
-	int	exit_status;
+    int	exit_status;
 
-	exit_status = execute_builtin(args, minienv);
-	free_array(args);
-	free_minienv(minienv);
-	rl_clear_history();
-	exit(exit_status);
+    exit_status = execute_builtin(args, minienv);
+    cleanup(args, minienv);
+    exit(exit_status);
 }
 
 int	execute_builtin(char **args, t_env **minienv)

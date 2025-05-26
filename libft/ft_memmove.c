@@ -3,41 +3,38 @@
 /*                                                        :::      ::::::::   */
 /*   ft_memmove.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/07/30 15:41:43 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/08/13 20:17:04 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2024/10/08 20:55:17 by jhualves          #+#    #+#             */
+/*   Updated: 2024/11/04 14:45:46 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-// Similar to memcpy, but avoids overlapping
-void	*ft_memmove(void *dst, const void *src, size_t n)
+void	*ft_memmove(void *dest, const void *src, size_t n)
 {
 	size_t	i;
 
-	if (!dst && !src)
-		return (NULL);
-	if (src < dst)
-	{
-		i = n - 1;
-		while (n)
-		{
-			*((char *)dst + i) = *((char *)src + i);
-			i--;
-			n--;
-		}
-	}
-	else
+	if ((dest == NULL && src == NULL) || n == 0)
+		return (dest);
+	if (src > dest)
 	{
 		i = 0;
-		while (n)
+		while (i < n)
 		{
-			*((char *)dst + i) = *((char *)src + i);
+			((unsigned char *) dest)[i] = ((unsigned char *)src)[i];
 			i++;
-			n--;
 		}
 	}
-	return (dst);
+	else if (n > 0)
+	{
+		i = n;
+		while (i > 0)
+		{
+			i--;
+			((unsigned char *) dest)[i] = ((unsigned char *)src)[i];
+		}
+	}
+	return (dest);
 }

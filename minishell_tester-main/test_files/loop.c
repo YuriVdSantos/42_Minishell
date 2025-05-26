@@ -1,25 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_lstlast.c                                       :+:      :+:    :+:   */
+/*   loop.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: lalex-ku <lalex-ku@42sp.org.br>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/08/13 15:03:07 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/08/13 15:03:07 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2022/06/22 17:32:45 by lalex-ku          #+#    #+#             */
+/*   Updated: 2022/06/22 17:32:50 by lalex-ku         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
 
-// Returns the last element of the list.
-t_list	*ft_lstlast(t_list *lst)
+int	main(int argc, char const *argv[])
 {
-	if (!lst)
-		return (NULL);
-	while (lst->next)
+	int	pid;
+
+	pid = fork();
+	open("infile", O_RDONLY);
+	while (1)
 	{
-		lst = lst->next;
+		printf("Helloo miniHELL %i\n", pid);
+		sleep(1);
 	}
-	return (lst);
+	return (0);
 }

@@ -1,39 +1,32 @@
-
-
 #include "minishell.h"
 
-static int	is_folder(char *command)
+static int	is_folder(const char *command)
 {
-	struct stat	statbuf;
+    struct stat	statbuf;
 
-	if (stat(command, &statbuf) != 0)
-		return (0);
-	if (S_ISDIR(statbuf.st_mode))
-	{
-		if (*command == '.')
-			command++;
-		if (*command == '.')
-			command++;
-		if (*command == '/')
-			return (TRUE);
-	}
-	return (FALSE);
+    if (stat(command, &statbuf) == 0 && S_ISDIR(statbuf.st_mode))
+    {
+        while (*command == '.' || *command == '/')
+            command++;
+        return (*command == '\0') ? TRUE : FALSE;
+    }
+    return (FALSE);
 }
 
-static void	handle_execve_errors(char **args, char *path, char **envp)
+static void	handle_execve_errors(char **args, const char *path, char **envp)
 {
-	int	error;
+    int	error_code;
 
-	error = EXIT_FAILURE;
-	print_perror_msg("execve", args[0]);
-	if (access(path, F_OK) != 0)
-		error = CMD_NOT_FOUND;
-	else if (access(path, X_OK) != 0)
-		error = NOT_EXECUTABLE;
-	free_array(args);
-	free_array(envp);
-	free(path);
-	exit(error);
+    print_perror_msg("execve", args[0]);
+    if (access(path, F_OK) != 0)
+        error_code = CMD_NOT_FOUND;
+    else if (access(path, X_OK) != 0)
+        error_code = NOT_EXECUTABLE;
+    else
+        error_code = EXIT_FAILURE;
+    free_array(args);
+    free_array(envp);
+    exit(error_code);
 }
 
 void	external_exit(char **args, t_env *minienv, int exit_status)

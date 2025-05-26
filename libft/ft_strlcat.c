@@ -3,37 +3,34 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strlcat.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lalexk-ku <lalex-ku@42sp.org.br>           +#+  +:+       +#+        */
+/*   By: jhualves <jhualves@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/07/31 09:59:45 by lalexk-ku         #+#    #+#             */
-/*   Updated: 2021/08/13 20:14:23 by lalexk-ku        ###   ########.fr       */
+/*   Created: 2024/10/08 20:55:25 by jhualves          #+#    #+#             */
+/*   Updated: 2024/11/04 14:58:52 by jhualves         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-// Appends string 'src' into string 'dst', up to a new string of 'max_size'
-// Returns the size of the concatenated dst + the size of remaining src
-// If not enough max_size, returns the minimum size it would need
-size_t	ft_strlcat(char *dst, const char *src, size_t max_size)
+size_t	ft_strlcat(char *dst, const char *src, size_t size)
 {
-	size_t	return_size;
+	size_t	i;
+	size_t	j;
+	size_t	dst_len;
+	size_t	src_len;
 
-	return_size = 0;
-	while (*dst && return_size < max_size)
+	dst_len = ft_strlen(dst);
+	src_len = ft_strlen(src);
+	if (size <= dst_len)
+		return (size + src_len);
+	i = dst_len;
+	j = 0;
+	while (src[j] != '\0' && (i + 1) < size)
 	{
-		dst++;
-		return_size++;
+		dst[i] = src[j];
+		j++;
+		i++;
 	}
-	if (return_size >= max_size)
-		return (return_size + ft_strlen(src));
-	while (*src && return_size + 1 < max_size)
-	{
-		*dst = *src;
-		dst++;
-		src++;
-		return_size++;
-	}
-	*dst = '\0';
-	return (return_size + ft_strlen(src));
+	dst[i] = '\0';
+	return (dst_len + src_len);
 }
